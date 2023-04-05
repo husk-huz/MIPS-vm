@@ -13,11 +13,10 @@ using namespace std;
 
 #define MEMO_SIZE 100 // memory size
 
-class RegAndMemory 
+class RegAndMemory
 {
 
 public:
-
     uint32_t reg[REG_NUM];
 
     char memo[MEMO_SIZE];
@@ -26,7 +25,7 @@ public:
 
     RegAndMemory()
     {
-        for(int i=0; i<REG_NUM; i++)
+        for (int i = 0; i < REG_NUM; i++)
         {
             reg[i] = 0;
         }
@@ -37,7 +36,7 @@ public:
     uint32_t GetUint32(uint32_t address)
     {
         uint32_t res = 0;
-        for(int i=0; i<4; i++)
+        for (int i = 0; i < 4; i++)
         {
             res <<= 8;
             res += memo[address + i];
@@ -50,10 +49,10 @@ public:
     {
         char temps[100];
         string res;
-        
+
         res += "        B D H \n";
 
-        for(int i=0; i<REG_NUM; i++)
+        for (int i = 0; i < REG_NUM; i++)
         {
             res += "reg " + to_string(i) + " : ";
             itoa(reg[i], temps, 2);
@@ -69,13 +68,13 @@ public:
         }
 
         int counter = 0;
-        for(int i=0; i<MEMO_SIZE; i++)
+        for (int i = 0; i < MEMO_SIZE; i++)
         {
             itoa(memo[i], temps, 16);
             res += temps;
             res += "   ";
-            counter ++;
-            if(counter == 10)
+            counter++;
+            if (counter == 10)
             {
                 res += "\n";
                 counter = 0;
@@ -89,30 +88,31 @@ public:
 vector<string> split(string str, string delim)
 {
     vector<string> res;
-    if("" == str) return res;
+    if ("" == str)
+        return res;
 
-	char * strs = new char[str.length() + 1] ;
-	strcpy(strs, str.c_str()); 
- 
-	char * d = new char[delim.length() + 1];
-	strcpy(d, delim.c_str());
- 
-	char *p = strtok(strs, d);
+    char *strs = new char[str.length() + 1];
+    strcpy(strs, str.c_str());
 
-	while(p) 
+    char *d = new char[delim.length() + 1];
+    strcpy(d, delim.c_str());
+
+    char *p = strtok(strs, d);
+
+    while (p)
     {
-		string s = p;
-		res.push_back(s);
-		p = strtok(NULL, d);
+        string s = p;
+        res.push_back(s);
+        p = strtok(NULL, d);
     }
 
     return res;
 }
 
-class Instruction 
+class Instruction
 {
 public:
-    RegAndMemory* target;
+    RegAndMemory *target;
 
     // register name -> register number
     static map<string, int> map_of_reg_num;
@@ -125,9 +125,12 @@ public:
 
     static map<uint32_t, string> map_of_opcode;
 
-    enum InstructionType 
+    enum InstructionType
     {
-        NULLTYPE, BITYPE, ASMTYPE, COMPLETETYPE
+        NULLTYPE,
+        BITYPE,
+        ASMTYPE,
+        COMPLETETYPE
     };
 
     InstructionType instruction_type = NULLTYPE;
@@ -138,7 +141,7 @@ public:
     // the length of splited instruction
     int asm_size = 0;
 
-    // 
+    //
     uint32_t bi_instruction = 0;
 
     // 00000000010000000001000
@@ -150,14 +153,14 @@ public:
     {
         int res = 0;
 
-        for(int i=0; i<31-index2; i++)
+        for (int i = 0; i < 31 - index2; i++)
         {
             bi_code <<= 1;
         }
 
-        for(int i=0; i<=index2-index1; i++)
+        for (int i = 0; i <= index2 - index1; i++)
         {
-            res = res*2 + (bi_code >= 2147483648);
+            res = res * 2 + (bi_code >= 2147483648);
             bi_code <<= 1;
         }
 
@@ -174,25 +177,25 @@ public:
         int res = 0;
         int flag = 1;
 
-        for(int i=0; i<31-index2; i++)
+        for (int i = 0; i < 31 - index2; i++)
         {
             bi_code <<= 1;
         }
 
-        if(bi_code >= 2147483648)
+        if (bi_code >= 2147483648)
         {
             flag = -1;
             bi_code <<= 1;
         }
 
-        for(int i=0; i<=index2-index1; i++)
+        for (int i = 0; i <= index2 - index1; i++)
         {
-            res = res*2;
-            if(flag == 1 && bi_code >= 2147483648)
+            res = res * 2;
+            if (flag == 1 && bi_code >= 2147483648)
             {
                 res += 1;
             }
-            else if(flag == -1 && bi_code < 2147483648)
+            else if (flag == -1 && bi_code < 2147483648)
             {
                 res += 1;
             }
@@ -282,19 +285,25 @@ public:
 
         map_of_asm["add"] = 0b000000;
         map_of_asm["addi"] = 0b001000;
+        map_of_asm["andi"] = 0b001100;
+        map_of_asm["ori"] = 0b001101;
+        map_of_asm["xori"] = 0b001110;
 
         map_of_opcode[0b000000] = "add";
         map_of_opcode[0b001000] = "addi";
+        map_of_opcode[0b001100] = "andi";
+        map_of_opcode[0b001101] = "ori";
+        map_of_opcode[0b001110] = "xori";
     }
 
     Instruction(string str, bool is_asm)
     {
-        if(is_asm)
+        if (is_asm)
         {
             splt_instruction = split(str, " ,");
             this->instruction_type = InstructionType::ASMTYPE;
         }
-        else 
+        else
         {
             this->instruction_type = Instruction::BITYPE;
             this->bi_instruction = stoi(str.c_str(), 0, 2);
@@ -302,6 +311,9 @@ public:
     }
 
     void BitTypeConvert_addi();
+    void BitTypeConvert_andi();
+    void BitTypeConvert_ori();
+    void BitTypeConvert_xori();
     void BitTypeConvert_1();
     void BitTypeConvert_2();
     void BitTypeConvert_3();
@@ -315,23 +327,38 @@ public:
     void BitTypeConvert()
     {
         int opcode = getUValueFromBits(this->bi_instruction, 31, 26);
-        
+
         switch (opcode)
         {
         case 0b000000: // add
             /* code */
             break;
 
-        case 0b001000: // addi 
+        case 0b001000: // addi
             BitTypeConvert_addi();
             break;
-        
+
+        case 0b001100: // andi
+            BitTypeConvert_andi();
+            break;
+
+        case 0b001101: // ori
+            BitTypeConvert_ori();
+            break;
+
+        case 0b001110: // xori
+            BitTypeConvert_xori();
+            break;
+
         default:
             break;
         }
     }
 
     void AsmTypeConvert_addi();
+    void AsmTypeConvert_andi();
+    void AsmTypeConvert_ori();
+    void AsmTypeConvert_xori();
     void AsmTypeConvert_1();
     void AsmTypeConvert_2();
     void AsmTypeConvert_3();
@@ -349,11 +376,23 @@ public:
         case 0b000000: // add
             /* code */
             break;
-        
+
         case 0b001000: // addi
             AsmTypeConvert_addi();
             break;
-        
+        case 0b001101: // ori
+            AsmTypeConvert_ori();
+            break;
+
+        case 0b001100: // andi
+            cout << "andi" << endl;
+            AsmTypeConvert_andi();
+            break;
+
+        case 0b001110: // xori
+            AsmTypeConvert_xori();
+            break;
+
         default:
             break;
         }
@@ -363,19 +402,19 @@ public:
     {
         switch (this->instruction_type)
         {
-        case Instruction::InstructionType::NULLTYPE :
+        case Instruction::InstructionType::NULLTYPE:
             cout << "NULLTYPE fail to complete" << endl;
             break;
-        case Instruction::InstructionType::BITYPE :
+        case Instruction::InstructionType::BITYPE:
             this->BitTypeConvert();
             break;
-        case Instruction::InstructionType::ASMTYPE :
+        case Instruction::InstructionType::ASMTYPE:
             this->AsmTypeConvert();
             break;
-        case Instruction::InstructionType::COMPLETETYPE :
+        case Instruction::InstructionType::COMPLETETYPE:
             cout << "Already completed" << endl;
             break;
-        
+
         default:
             break;
         }
@@ -384,7 +423,7 @@ public:
     string toString()
     {
         string res;
-        for(string stp : splt_instruction)
+        for (string stp : splt_instruction)
         {
             res += stp + " ";
         }
@@ -392,18 +431,21 @@ public:
         return res;
     }
 
-    void Exe_addi(RegAndMemory* target);
-    void Exe_1(RegAndMemory* target);
-    void Exe_2(RegAndMemory* target);
-    void Exe_3(RegAndMemory* target);
-    void Exe_4(RegAndMemory* target);
-    void Exe_5(RegAndMemory* target);
-    void Exe_6(RegAndMemory* target);
-    void Exe_7(RegAndMemory* target);
-    void Exe_8(RegAndMemory* target);
-    void Exe_9(RegAndMemory* target);
+    void Exe_addi(RegAndMemory *target);
+    void Exe_andi(RegAndMemory *target);
+    void Exe_ori(RegAndMemory *target);
+    void Exe_xori(RegAndMemory *target);
+    void Exe_1(RegAndMemory *target);
+    void Exe_2(RegAndMemory *target);
+    void Exe_3(RegAndMemory *target);
+    void Exe_4(RegAndMemory *target);
+    void Exe_5(RegAndMemory *target);
+    void Exe_6(RegAndMemory *target);
+    void Exe_7(RegAndMemory *target);
+    void Exe_8(RegAndMemory *target);
+    void Exe_9(RegAndMemory *target);
 
-    void Execute(RegAndMemory* target)
+    void Execute(RegAndMemory *target)
     {
         int opcode = Instruction::getUValueFromBits(this->bi_instruction, 31, 26);
 
@@ -417,11 +459,22 @@ public:
             Exe_addi(target);
             break;
 
+        case 0b001100: // andi
+            Exe_andi(target);
+            break;
+
+        case 0b001101: // ori
+            Exe_ori(target);
+            break;
+
+        case 0b001110: // xori
+            Exe_xori(target);
+            break;
+
         default:
             break;
         }
     }
-
 };
 
 map<string, int> Instruction::map_of_reg_num = map<string, int>();
@@ -461,154 +514,387 @@ void Instruction::AsmTypeConvert_addi()
     return;
 }
 
-void Instruction::Exe_addi(RegAndMemory* target)
+void Instruction::Exe_addi(RegAndMemory *target)
 {
-    if(this->instruction_type == InstructionType::ASMTYPE 
-        || this->instruction_type == InstructionType::NULLTYPE
-    )
+    if (this->instruction_type == InstructionType::ASMTYPE || this->instruction_type == InstructionType::NULLTYPE)
     {
         cout << "Error : not able to execute (null or asm only)" << endl;
     }
-    else 
+    else
     {
         int reg1 = this->getUValueFromBits(this->bi_instruction, 25, 21);
         int reg2 = this->getUValueFromBits(this->bi_instruction, 20, 16);
         int value = this->getValueFromBits(this->bi_instruction, 15, 0);
-        cout << "reg1 : " << reg1 
+        cout << "reg1 : " << reg1
              << "reg2 : " << reg2
              << "val: " << value << endl;
         target->reg[reg1] = target->reg[reg2] + value;
     }
 }
 
+void Instruction::BitTypeConvert_andi()
+{
+    int opcode = this->getUValueFromBits(this->bi_instruction, 31, 26);
+    this->splt_instruction.push_back(this->map_of_opcode[opcode]);
+    int reg1 = this->getUValueFromBits(this->bi_instruction, 25, 21);
+    this->splt_instruction.push_back(this->map_of_reg_str[reg1]);
+    int reg2 = this->getUValueFromBits(this->bi_instruction, 20, 16);
+    this->splt_instruction.push_back(this->map_of_reg_str[reg2]);
+    int imm = this->getUValueFromBits(this->bi_instruction, 15, 0);
+    this->splt_instruction.push_back(to_string(imm));
+}
+
+void Instruction::AsmTypeConvert_andi()
+{
+    int64_t andi_value = 0;
+    andi_value = 0b001100;
+    andi_value <<= 26;
+    this->bi_instruction += andi_value;
+    andi_value = map_of_reg_num[this->splt_instruction[1]];
+    andi_value <<= 21;
+    this->bi_instruction += andi_value;
+    andi_value = map_of_reg_num[this->splt_instruction[2]];
+    andi_value <<= 16;
+    this->bi_instruction += andi_value;
+    andi_value = atoi(this->splt_instruction[3].c_str());
+    this->bi_instruction += andi_value;
+    return;
+}
+
+void Instruction::Exe_andi(RegAndMemory *target)
+{
+    if (this->instruction_type == InstructionType::ASMTYPE || this->instruction_type == InstructionType::NULLTYPE)
+    {
+        cout << "Error: not able to execute (null or asm only)" << endl;
+    }
+    else
+    {
+        int reg1 = this->getUValueFromBits(this->bi_instruction, 25, 21);
+        int reg2 = this->getUValueFromBits(this->bi_instruction, 20, 16);
+        int imm = this->getUValueFromBits(this->bi_instruction, 15, 0);
+        cout << "reg1: " << reg1 << " reg2: " << reg2 << " imm: " << imm << endl;
+        // only for testing purpose
+        // target->reg[reg2] = 16;
+        target->reg[reg1] = target->reg[reg2] & imm;
+    }
+}
+
+void Instruction::BitTypeConvert_ori()
+{
+    int opcode = this->getUValueFromBits(this->bi_instruction, 31, 26);
+    this->splt_instruction.push_back(this->map_of_opcode[opcode]);
+    int reg1 = this->getUValueFromBits(this->bi_instruction, 25, 21);
+    this->splt_instruction.push_back(this->map_of_reg_str[reg1]);
+    int reg2 = this->getUValueFromBits(this->bi_instruction, 20, 16);
+    this->splt_instruction.push_back(this->map_of_reg_str[reg2]);
+    int imm = this->getUValueFromBits(this->bi_instruction, 15, 0);
+    this->splt_instruction.push_back(to_string(imm));
+}
+
+void Instruction::AsmTypeConvert_ori()
+{
+    int64_t ori_value = 0;
+    ori_value = 0b001101;
+    ori_value <<= 26;
+    this->bi_instruction += ori_value;
+    ori_value = map_of_reg_num[this->splt_instruction[1]];
+    ori_value <<= 21;
+    this->bi_instruction += ori_value;
+    ori_value = map_of_reg_num[this->splt_instruction[2]];
+    ori_value <<= 16;
+    this->bi_instruction += ori_value;
+    ori_value = atoi(this->splt_instruction[3].c_str());
+    this->bi_instruction += ori_value;
+    return;
+}
+
+void Instruction::Exe_ori(RegAndMemory *target)
+{
+    if (this->instruction_type == InstructionType::ASMTYPE || this->instruction_type == InstructionType::NULLTYPE)
+    {
+        cout << "Error: not able to execute (null or asm only)" << endl;
+    }
+    else
+    {
+        int reg1 = this->getUValueFromBits(this->bi_instruction, 25, 21);
+        int reg2 = this->getUValueFromBits(this->bi_instruction, 20, 16);
+        int imm = this->getUValueFromBits(this->bi_instruction, 15, 0);
+        cout << "reg1: " << reg1 << " reg2: " << reg2 << " imm: " << imm << endl;
+        // only for testing purpose
+        // target->reg[reg2] = 16;
+        target->reg[reg1] = target->reg[reg2] | imm;
+    }
+}
+
+void Instruction::BitTypeConvert_xori()
+{
+    int opcode = this->getUValueFromBits(this->bi_instruction, 31, 26);
+    this->splt_instruction.push_back(this->map_of_opcode[opcode]);
+    int reg1 = this->getUValueFromBits(this->bi_instruction, 25, 21);
+    this->splt_instruction.push_back(this->map_of_reg_str[reg1]);
+    int reg2 = this->getUValueFromBits(this->bi_instruction, 20, 16);
+    this->splt_instruction.push_back(this->map_of_reg_str[reg2]);
+    int imm = this->getUValueFromBits(this->bi_instruction, 15, 0);
+    this->splt_instruction.push_back(to_string(imm));
+}
+
+void Instruction::AsmTypeConvert_xori()
+{
+    int64_t xori_value = 0;
+    xori_value = 0b001110;
+    xori_value <<= 26;
+    this->bi_instruction += xori_value;
+    xori_value = map_of_reg_num[this->splt_instruction[1]];
+    xori_value <<= 21;
+    this->bi_instruction += xori_value;
+    xori_value = map_of_reg_num[this->splt_instruction[2]];
+    xori_value <<= 16;
+    this->bi_instruction += xori_value;
+    xori_value = atoi(this->splt_instruction[3].c_str());
+    this->bi_instruction += xori_value;
+    return;
+}
+
+void Instruction::Exe_xori(RegAndMemory *target)
+{
+    if (this->instruction_type == InstructionType::ASMTYPE || this->instruction_type == InstructionType::NULLTYPE)
+    {
+        cout << "Error: not able to execute (null or asm only)" << endl;
+    }
+    else
+    {
+        int reg1 = this->getUValueFromBits(this->bi_instruction, 25, 21);
+        int reg2 = this->getUValueFromBits(this->bi_instruction, 20, 16);
+        int imm = this->getUValueFromBits(this->bi_instruction, 15, 0);
+        cout << "reg1: " << reg1 << " reg2: " << reg2 << " imm: " << imm << endl;
+        // only for testing purpose
+        // target->reg[reg2] = 16;
+        target->reg[reg1] = target->reg[reg2] ^ imm;
+    }
+}
+
 void Instruction::BitTypeConvert_1()
-{}
+{
+}
 
 void Instruction::AsmTypeConvert_1()
-{}
+{
+}
 
-void Instruction::Exe_1(RegAndMemory* target)
-{}
+void Instruction::Exe_1(RegAndMemory *target)
+{
+}
 
 void Instruction::BitTypeConvert_2()
-{}
+{
+}
 
 void Instruction::AsmTypeConvert_2()
-{}
+{
+}
 
-void Instruction::Exe_2(RegAndMemory* target)
-{}
+void Instruction::Exe_2(RegAndMemory *target)
+{
+}
 
 void Instruction::BitTypeConvert_3()
-{}
+{
+}
 
 void Instruction::AsmTypeConvert_3()
-{}
+{
+}
 
-void Instruction::Exe_3(RegAndMemory* target)
-{}
+void Instruction::Exe_3(RegAndMemory *target)
+{
+}
 
 void Instruction::BitTypeConvert_4()
-{}
+{
+}
 
 void Instruction::AsmTypeConvert_4()
-{}
+{
+}
 
-void Instruction::Exe_4(RegAndMemory* target)
-{}
+void Instruction::Exe_4(RegAndMemory *target)
+{
+}
 
 void Instruction::BitTypeConvert_5()
-{}
+{
+}
 
 void Instruction::AsmTypeConvert_5()
-{}
+{
+}
 
-void Instruction::Exe_5(RegAndMemory* target)
-{}
+void Instruction::Exe_5(RegAndMemory *target)
+{
+}
 
 void Instruction::BitTypeConvert_6()
-{}
+{
+}
 
 void Instruction::AsmTypeConvert_6()
-{}
+{
+}
 
-void Instruction::Exe_6(RegAndMemory* target)
-{}
+void Instruction::Exe_6(RegAndMemory *target)
+{
+}
 
 void Instruction::BitTypeConvert_7()
-{}
+{
+}
 
 void Instruction::AsmTypeConvert_7()
-{}
+{
+}
 
-void Instruction::Exe_7(RegAndMemory* target)
-{}
+void Instruction::Exe_7(RegAndMemory *target)
+{
+}
 
 void Instruction::BitTypeConvert_8()
-{}
+{
+}
 
 void Instruction::AsmTypeConvert_8()
-{}
+{
+}
 
-void Instruction::Exe_8(RegAndMemory* target)
-{}
+void Instruction::Exe_8(RegAndMemory *target)
+{
+}
 
 void Instruction::BitTypeConvert_9()
-{}
+{
+}
 
 void Instruction::AsmTypeConvert_9()
-{}
-
-void Instruction::Exe_9(RegAndMemory* target)
-{}
-
-int main()
 {
-    // uint32_t bi_code = 2147483649;
+}
 
-    // cout << Instruction::getValueFromBits(bi_code, 30, 31) << endl;
+void Instruction::Exe_9(RegAndMemory *target)
+{
+}
 
-    // Instruction temp_ins("add $a2, $a3, $a4", true);
+void test_addi_instruction()
+{
+    RegAndMemory reg_mem;
 
-    // cout << temp_ins.toString() << endl;
+    string addi_asm = "addi $s0, $s1, 4";
+    Instruction addi_instr(addi_asm, true);
+    Instruction::InitMap();
 
-    RegAndMemory rm;
-
-    cout << rm.toString() << endl;
-
-    string add_test = "addi $s0, $s1, 4";
-
-    Instruction add_ins(add_test, true);
-
-    Instruction::InitMap(); // 只要做一次就够了
-
-    cout << add_ins.toString() << endl;
-
-    add_ins.toCompeleteType();
-
-    cout << bitset<32>(add_ins.bi_instruction) << endl;
-
-    cout << add_ins.bi_instruction << endl;
+    addi_instr.toCompeleteType();
+    cout << bitset<32>(addi_instr.bi_instruction) << endl;
 
     stringstream sst;
 
-    sst << bitset<32>(add_ins.bi_instruction);
+    sst << bitset<32>(addi_instr.bi_instruction);
 
     string bi_str;
 
     sst >> bi_str;
 
-    cout << bi_str << endl;
-
     Instruction ins_test(bi_str, false);
 
     ins_test.toCompeleteType();
 
-    cout << ins_test.toString() << endl;
+    ins_test.Execute(&reg_mem);
 
-    ins_test.Execute(&rm);
+    cout << reg_mem.toString() << endl;
+}
 
-    cout << rm.toString() << endl;
+void test_andi_instruction()
+{
+    // Create a new instance of RegAndMemory
+    RegAndMemory reg_mem;
+
+    // Create an ANDI instruction and assemble it
+    string andi_asm = "andi $s0, $s1, 0";
+    Instruction andi_instr(andi_asm, true);
+    Instruction::InitMap();
+
+    // Convert the instruction to binary and print it
+    andi_instr.toCompeleteType();
+    cout << bitset<32>(andi_instr.bi_instruction) << endl;
+
+    // Create a new Instruction object from the binary string and execute it
+    stringstream sst;
+    sst << bitset<32>(andi_instr.bi_instruction);
+    string bi_str;
+    sst >> bi_str;
+    Instruction ins_test(bi_str, false);
+    ins_test.toCompeleteType();
+    ins_test.Execute(&reg_mem);
+
+    // Print the register and memory values after the execution
+    cout << reg_mem.toString() << endl;
+}
+
+void test_ori_instruction()
+{
+    // Create a new instance of RegAndMemory
+    RegAndMemory reg_mem;
+
+    // Create an ORI instruction and assemble it
+    string ori_asm = "ori $s0, $s1, 0";
+    Instruction ori_instr(ori_asm, true);
+    Instruction::InitMap();
+
+    // Convert the instruction to binary and print it
+    ori_instr.toCompeleteType();
+    cout << bitset<32>(ori_instr.bi_instruction) << endl;
+
+    // Create a new Instruction object from the binary string and execute it
+    stringstream sst;
+    sst << bitset<32>(ori_instr.bi_instruction);
+    string bi_str;
+    sst >> bi_str;
+    Instruction ins_test(bi_str, false);
+    ins_test.toCompeleteType();
+    ins_test.Execute(&reg_mem);
+
+    // Print the register and memory values after the execution
+    cout << reg_mem.toString() << endl;
+}
+
+void test_xori_instruction()
+{
+    // Create a new instance of RegAndMemory
+    RegAndMemory reg_mem;
+
+    // Create an ORI instruction and assemble it
+    string ori_asm = "xori $s0, $s1, 1";
+    Instruction ori_instr(ori_asm, true);
+    Instruction::InitMap();
+
+    // Convert the instruction to binary and print it
+    ori_instr.toCompeleteType();
+    cout << bitset<32>(ori_instr.bi_instruction) << endl;
+
+    // Create a new Instruction object from the binary string and execute it
+    stringstream sst;
+    sst << bitset<32>(ori_instr.bi_instruction);
+    string bi_str;
+    sst >> bi_str;
+    Instruction ins_test(bi_str, false);
+    ins_test.toCompeleteType();
+    ins_test.Execute(&reg_mem);
+
+    // Print the register and memory values after the execution
+    cout << reg_mem.toString() << endl;
+}
+
+int main()
+{
+    // test_andi_instruction();
+    // test_ori_instruction();
+    test_xori_instruction();
 
     return 0;
 }
