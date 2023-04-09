@@ -14,6 +14,8 @@ using namespace std;
 
 #define MEMO_SIZE 100 // memory size
 
+class Instruction;
+
 class RegAndMemory
 {
 
@@ -22,7 +24,7 @@ public:
 
     char memo[MEMO_SIZE];
 
-    uint32_t pc;
+    uint32_t pc = 0;
 
     RegAndMemory()
     {
@@ -31,6 +33,27 @@ public:
             reg[i] = 0;
         }
         memset(memo, 0, MEMO_SIZE);
+    }
+
+    void LoadCode(vector<uint32_t> code)
+    {
+        for(int i=0; i<code.size(); i++)
+        {
+            this->SetUint32(code[i], 4*i);
+        }
+    }
+
+    int Execute();
+
+    void SetUint32(uint32_t value, uint32_t address)
+    {
+        uint64_t div = 1;
+        div <<= 8;
+        for (int i=3; i>=0; i--)
+        {
+            memo[address + i] = (value % div);
+            value >>= 8;
+        }
     }
 
     uint32_t GetUint32(uint32_t address)
@@ -52,6 +75,7 @@ public:
 
         res += "        B D H \n";
 
+        int flag = 0;
         for (int i = 0; i < REG_NUM; i++)
         {
             res += "reg " + to_string(i) + " : ";
@@ -64,17 +88,34 @@ public:
             itoa(reg[i], temps, 16);
             res += temps;
             res += " ";
-            res += "\n";
+
+            if(flag == 3)
+            {
+                res += "\n";
+                flag = -1;
+            }
+            else 
+            {
+                res += "        ";
+            }
+
+            flag++;
         }
 
         int counter = 0;
+        int pc_counter = pc;
         for (int i = 0; i < MEMO_SIZE; i++)
         {
             itoa(memo[i], temps, 16);
             res += temps;
             res += "   ";
             counter++;
-            if (counter == 10)
+            pc_counter --;
+            if (pc_counter == 0)
+            {
+                res += " << ";
+            }
+            if (counter == 4)
             {
                 res += "\n";
                 counter = 0;
@@ -172,9 +213,9 @@ public:
     // get int value between index2 and index1
     // -> 10000000001
 
-    static int getValueFromBits(uint32_t bi_code, int index2, int index1)
+    static int64_t getValueFromBits(uint32_t bi_code, int index2, int index1)
     {
-        int res = 0;
+        int64_t res = 0;
         int flag = 1;
 
         for (int i = 0; i < 31 - index2; i++)
@@ -187,8 +228,12 @@ public:
             flag = -1;
             bi_code <<= 1;
         }
+        else 
+        {
+            bi_code <<= 1;
+        }
 
-        for (int i = 0; i <= index2 - index1; i++)
+        for (int i = 0; i < index2 - index1; i++)
         {
             res = res * 2;
             if (flag == 1 && bi_code >= 2147483648)
@@ -200,6 +245,10 @@ public:
                 res += 1;
             }
             bi_code <<= 1;
+        }
+        if(flag == -1)
+        {
+            res += 1;
         }
 
         return res * flag;
@@ -311,6 +360,11 @@ public:
         }
         else
         {
+            if(str.length() != 32)
+            {
+                this->instruction_type = NULLTYPE;
+                return;
+            }
             this->instruction_type = Instruction::BITYPE;
             this->bi_instruction = stoi(str.c_str(), 0, 2);
         }
@@ -335,6 +389,10 @@ public:
 
     void BitTypeConvert()
     {
+        if(this->instruction_type == NULLTYPE)
+        {
+            return;
+        }
         int opcode = getUValueFromBits(this->bi_instruction, 31, 26);
         int func = getUValueFromBits(this->bi_instruction, 5, 0);
 
@@ -375,7 +433,9 @@ public:
         case 0b000011:
             BitTypeConvert_jal();
             break;
+
         default:
+            this->instruction_type = NULLTYPE;
             break;
         }
     }
@@ -399,6 +459,12 @@ public:
 
     void AsmTypeConvert()
     {
+        if(this->splt_instruction.size() == 0)
+        {
+            this->instruction_type = NULLTYPE;
+            
+            return;
+        }
         switch (map_of_asm[this->splt_instruction[0]])
         {
         case 0b000000: // add
@@ -434,6 +500,7 @@ public:
             break;
 
         default:
+            this->instruction_type = NULLTYPE;
             break;
         }
     }
@@ -443,7 +510,7 @@ public:
         switch (this->instruction_type)
         {
         case Instruction::InstructionType::NULLTYPE:
-            cout << "NULLTYPE fail to complete" << endl;
+            // cout << "NULLTYPE fail to complete" << endl;
             break;
         case Instruction::InstructionType::BITYPE:
             this->BitTypeConvert();
@@ -463,9 +530,19 @@ public:
     string toString()
     {
         string res;
+        int counter = 0;
         for (string stp : splt_instruction)
         {
-            res += stp + " ";
+            counter ++;
+            res += stp;
+            if(counter > 1 && counter != splt_instruction.size())
+            {
+                res += ", ";
+            }
+            else 
+            {
+                res += " ";
+            }
         }
 
         return res;
@@ -537,6 +614,26 @@ public:
         }
     }
 };
+
+int RegAndMemory::Execute()
+{
+    uint32_t value = this->GetUint32(pc);
+
+    if(value == 0)
+    {
+        return 0;
+    }
+
+    pc += 4;
+    stringstream sst;
+    sst << bitset<32>(value);
+    string code;
+    sst >> code;
+    Instruction ins(code, false);
+    ins.Execute(this);
+
+    return 1;
+}
 
 map<string, int> Instruction::map_of_reg_num = map<string, int>();
 
@@ -1121,7 +1218,7 @@ void test_beq_instruction()
     reg_mem.pc = 0;
 
     // Create an ORI instruction and assemble it
-    string ori_asm = "beq $s0, $s0, 8";
+    string ori_asm = "beq $s0, $s0, 100";
     Instruction ori_instr(ori_asm, true);
     Instruction::InitMap();
 
@@ -1173,13 +1270,241 @@ void test_jr_instruction()
     cout << "pc: " << reg_mem.pc << endl;
 }
 
+void running_test()
+{
+    RegAndMemory rm;
+    rm.SetUint32(0x1234, 0);
+
+    char buffer[100];
+
+    itoa(rm.GetUint32(0), buffer, 16);
+
+    cout << buffer << endl;
+}
+
+
+class UserInterface 
+{
+public:
+
+    int interface_state = 0;
+
+    enum 
+    {
+        NULLSTATE,
+        STATE_ONE,
+        STATE_TWO,
+        STATE_THREE,
+        STATE_FOUR
+    };
+
+    void printUI()
+    {
+        system("cls");
+        int n;
+        cout << "1. asm -> bi" << endl;
+        cout << "2. bi -> asm" << endl;
+        cout << "3. load code and run" << endl;
+        cout << "4." << endl;
+        cout << "type number to execute" << endl;
+        cout << " >> " ;
+        try
+        {
+            cin >> n;
+        }
+        catch(const std::exception& e)
+        {
+            string s;
+            cin >> s;
+        }
+
+        this->interface_state = n;
+        system("cls");
+        return;
+    }
+
+    void AsmConvert()
+    {
+        system("cls");
+        int n;
+        cout << "number of lines: " << endl;
+        cout << " >> ";
+        cin >> n;
+        cout << n << " lines of asm code :" << endl; 
+
+        vector<string> bibuffer;
+
+        for(int i=0; i<n; i++)
+        {
+            string line;
+            getline(cin, line);
+            Instruction ins(line, true);
+            ins.toCompeleteType();
+            if(ins.instruction_type == Instruction::NULLTYPE)
+            {
+                i--;
+                continue;
+            }
+            stringstream st;
+            st << bitset<32>(ins.bi_instruction);
+            st >> line;
+            bibuffer.push_back(line);
+        }
+
+        for(string code : bibuffer)
+        {
+            cout << code << endl;
+        }
+
+        cout << "print enter to continue...";
+        getchar();
+        this->interface_state = 0;
+        system("cls");
+    }
+
+    void BiConvert()
+    {
+        system("cls");
+        int n;
+        cout << "number of lines: " << endl;
+        cout << " >> ";
+        cin >> n;
+
+        cout << n << " lines of bi code" << endl;
+
+        vector<string> asmbuffer;
+
+        for(int i=0; i<n; i++)
+        {
+            string line;
+            getline(cin, line);
+            Instruction ins(line, false);
+            ins.toCompeleteType();
+            if(ins.instruction_type == Instruction::NULLTYPE)
+            {
+                i--;
+                continue;
+            }
+
+            asmbuffer.push_back(ins.toString());
+        }
+
+        for(string code : asmbuffer)
+        {
+            cout << code << endl;
+        }
+
+        cout << "print enter to continue...";
+        getchar();
+        this->interface_state = 0;
+        system("cls");
+    }
+
+    vector<uint32_t> GetCode(int lines)
+    {
+        vector<uint32_t> res;
+
+        for(int i=0; i<lines; i++)
+        {
+            string str;
+            cin >> str;
+            uint32_t value;
+            value = stoi(str.c_str(), 0, 2);
+            res.push_back(value);
+        }
+
+        return res;
+    }
+
+    void VmExecute()
+    {
+        int n;
+        cout << "lines of the code:" << endl;
+        cout << " >> " ;
+        cin >> n;
+        cout << n << " lines of bi code" << endl;
+
+        RegAndMemory rm;
+        vector<uint32_t> code = GetCode(n);
+        rm.LoadCode(code);
+
+        while(1)
+        {
+            system("cls");
+            cout << rm.toString() << endl;
+            cout << "press enter to run to next step" << endl;
+            getchar();
+
+            int res = rm.Execute();
+            if(res == 0)
+            {
+                break;
+            }
+        }
+        
+        system("cls");
+        cout << rm.toString() << endl;
+        cout << "code run to the end, press enter to continue..." << endl;
+        getchar();
+
+        this->interface_state = 0;
+    }
+
+    void run()
+    {
+        while(1)
+        {
+            switch (this->interface_state)
+            {
+            case UserInterface::NULLSTATE:
+                this->printUI();
+                break;
+
+            case UserInterface::STATE_ONE:
+                this->AsmConvert();
+                break;
+            
+            case UserInterface::STATE_TWO:
+                this->BiConvert();
+                break;
+            
+            case UserInterface::STATE_THREE:
+                this->VmExecute();
+                break;
+
+            case UserInterface::STATE_FOUR:
+                break;
+            
+            default:
+                break;
+            }
+        }
+    }
+
+};
+
+
 int main()
 {
+    Instruction::InitMap();
     // test_andi_instruction();
     // test_ori_instruction();
     //test_xori_instruction();
-    //test_jal_instruction();
-    //test_beq_instruction();
-    test_jr_instruction();
+    // test_jal_instruction();
+    // test_beq_instruction();
+    // test_jr_instruction();
+    // running_test();
+    // AsmConvert();
+    UserInterface ui;
+    ui.run();
+
+    // uint32_t value = 0b11101;
+
+    // cout << Instruction::getValueFromBits(value, 4, 0) << endl;
+
+    // RegAndMemory rm;
+    // cout << rm.toString() << endl;
+
     return 0;
 }
+
