@@ -1,4 +1,4 @@
-
+﻿
 #include <iostream>
 #include <map>
 #include <cstring>
@@ -332,9 +332,12 @@ public:
         map_of_reg_str[30] = "$fp";
         map_of_reg_str[31] = "$ra";
 
+        
+        map_of_asm["slt"] = 0b000000;
         map_of_asm["add"] = 0b000000;
         map_of_asm["addi"] = 0b001000;
         map_of_asm["andi"] = 0b001100;
+        map_of_asm["and"] = 0b000000;
         map_of_asm["ori"] = 0b001101;
         map_of_asm["xori"] = 0b001110;
         map_of_asm["beq"] = 0b000100;
@@ -377,6 +380,9 @@ public:
     void BitTypeConvert_beq();
     void BitTypeConvert_jal();
     void BitTypeConvert_jr();
+    void BitTypeConvert_add( );
+    void BitTypeConvert_and( );
+    void BitTypeConvert_slt( );
     void BitTypeConvert_1();
     void BitTypeConvert_2();
     void BitTypeConvert_3();
@@ -398,45 +404,54 @@ public:
 
         switch (opcode)
         {
-        case 0b000000: // add
-            switch (func)
-            {
-            case 0b001000:
-                BitTypeConvert_jr();
+            case 0b000000: // add
+                switch (func)
+                {
+                    case 0b001000:
+                        BitTypeConvert_jr();
+                        break;
+                    case 0b100000:
+                        BitTypeConvert_add( );
+                        break;
+                    case 0b100100:
+                        BitTypeConvert_and( );
+                        break;  
+                    case 0b101010:
+                        BitTypeConvert_slt( );
+                        break; 
+                    default:
+                        break;
+                }
+                /* code */
                 break;
+
+            case 0b001000: // addi
+                BitTypeConvert_addi();
+                break;
+
+            case 0b001100: // andi
+                BitTypeConvert_andi();
+                break;
+
+            case 0b001101: // ori
+                BitTypeConvert_ori();
+                break;
+
+            case 0b001110: // xori
+                BitTypeConvert_xori();
+                break;
+
+            case 0b000100:
+                BitTypeConvert_beq();
+                break;
+
+            case 0b000011:
+                BitTypeConvert_jal();
+                break;
+
             default:
+                this->instruction_type = NULLTYPE;
                 break;
-            }
-            /* code */
-            break;
-
-        case 0b001000: // addi
-            BitTypeConvert_addi();
-            break;
-
-        case 0b001100: // andi
-            BitTypeConvert_andi();
-            break;
-
-        case 0b001101: // ori
-            BitTypeConvert_ori();
-            break;
-
-        case 0b001110: // xori
-            BitTypeConvert_xori();
-            break;
-
-        case 0b000100:
-            BitTypeConvert_beq();
-            break;
-
-        case 0b000011:
-            BitTypeConvert_jal();
-            break;
-
-        default:
-            this->instruction_type = NULLTYPE;
-            break;
         }
     }
 
@@ -447,6 +462,9 @@ public:
     void AsmTypeConvert_beq();
     void AsmTypeConvert_jal();
     void AsmTypeConvert_jr();
+    void AsmTypeConvert_and();
+    void AsmTypeConvert_add( );
+    void AsmTypeConvert_slt( );
     void AsmTypeConvert_1();
     void AsmTypeConvert_2();
     void AsmTypeConvert_3();
@@ -462,46 +480,60 @@ public:
         if(this->splt_instruction.size() == 0)
         {
             this->instruction_type = NULLTYPE;
-            
+
             return;
         }
         switch (map_of_asm[this->splt_instruction[0]])
         {
-        case 0b000000: // add
+            case 0b000000: // add
 
-            if (this->splt_instruction[0] == "jr") {
-                AsmTypeConvert_jr();
-            }
-            /* code */
-            break;
+                if (this->splt_instruction[0] == "jr") {
+                    AsmTypeConvert_jr();
+                }
+                else if( this->splt_instruction[0] == "add" )
+                {
+                    AsmTypeConvert_add( );
+                }
+                else if( this->splt_instruction[0] == "and" )
+                {
+                    AsmTypeConvert_and( );
+                }
+                else if( this->splt_instruction[0] == "slt" )
+                {
+                    AsmTypeConvert_slt( );
+                }
+                else
+                    ;
+                /* code */
+                break;
 
-        case 0b001000: // addi
-            AsmTypeConvert_addi();
-            break;
-        case 0b001101: // ori
-            AsmTypeConvert_ori();
-            break;
+            case 0b001000: // addi
+                AsmTypeConvert_addi();
+                break;
+            case 0b001101: // ori
+                AsmTypeConvert_ori();
+                break;
 
-        case 0b001100: // andi
-            cout << "andi" << endl;
-            AsmTypeConvert_andi();
-            break;
+            case 0b001100: // andi
+                cout << "andi" << endl;
+                AsmTypeConvert_andi();
+                break;
 
-        case 0b001110: // xori
-            AsmTypeConvert_xori();
-            break;
+            case 0b001110: // xori
+                AsmTypeConvert_xori();
+                break;
 
-        case 0b000100://beq
-            AsmTypeConvert_beq();
-            break;
+            case 0b000100://beq
+                AsmTypeConvert_beq();
+                break;
 
-        case 0b000011://jal
-            AsmTypeConvert_jal();
-            break;
+            case 0b000011://jal
+                AsmTypeConvert_jal();
+                break;
 
-        default:
-            this->instruction_type = NULLTYPE;
-            break;
+            default:
+                this->instruction_type = NULLTYPE;
+                break;
         }
     }
 
@@ -509,21 +541,21 @@ public:
     {
         switch (this->instruction_type)
         {
-        case Instruction::InstructionType::NULLTYPE:
-            // cout << "NULLTYPE fail to complete" << endl;
-            break;
-        case Instruction::InstructionType::BITYPE:
-            this->BitTypeConvert();
-            break;
-        case Instruction::InstructionType::ASMTYPE:
-            this->AsmTypeConvert();
-            break;
-        case Instruction::InstructionType::COMPLETETYPE:
-            cout << "Already completed" << endl;
-            break;
+            case Instruction::InstructionType::NULLTYPE:
+                // cout << "NULLTYPE fail to complete" << endl;
+                break;
+            case Instruction::InstructionType::BITYPE:
+                this->BitTypeConvert();
+                break;
+            case Instruction::InstructionType::ASMTYPE:
+                this->AsmTypeConvert();
+                break;
+            case Instruction::InstructionType::COMPLETETYPE:
+                cout << "Already completed" << endl;
+                break;
 
-        default:
-            break;
+            default:
+                break;
         }
     }
 
@@ -555,6 +587,9 @@ public:
     void Exe_beq(RegAndMemory* target);
     void Exe_jal(RegAndMemory* target);
     void Exe_jr(RegAndMemory* target);
+    void Exe_add(RegAndMemory* target);
+    void Exe_and(RegAndMemory* target);
+    void Exe_slt(RegAndMemory* target);
     void Exe_1(RegAndMemory* target);
     void Exe_2(RegAndMemory* target);
     void Exe_3(RegAndMemory* target);
@@ -573,44 +608,53 @@ public:
 
         switch (opcode)
         {
-        case 0b000000:
-            switch (func)
-            {
-            case 0b001000://jr
-                Exe_jr(target);
+            case 0b000000:
+                switch (func)
+                {
+                    case 0b001000://jr
+                        Exe_jr(target);
+                        break;
+                    case 0b100000:
+                        Exe_add( target );
+                        break;
+                    case 0b100100:
+                        Exe_and( target );
+                        break;
+                    case 0b101010:
+                        Exe_slt( target );
+                        break;
+                    default:
+                        break;
+                }
+                /* code */
                 break;
+
+            case 0b001000: // addi
+                Exe_addi(target);
+                break;
+
+            case 0b001100: // andi
+                Exe_andi(target);
+                break;
+
+            case 0b001101: // ori
+                Exe_ori(target);
+                break;
+
+            case 0b001110: // xori
+                Exe_xori(target);
+                break;
+
+            case 0b000100://beq
+                Exe_beq(target);
+                break;
+
+            case 0b000011://jal
+                Exe_jal(target);
+                break;
+
             default:
                 break;
-            }
-            /* code */
-            break;
-
-        case 0b001000: // addi
-            Exe_addi(target);
-            break;
-
-        case 0b001100: // andi
-            Exe_andi(target);
-            break;
-
-        case 0b001101: // ori
-            Exe_ori(target);
-            break;
-
-        case 0b001110: // xori
-            Exe_xori(target);
-            break;
-
-        case 0b000100://beq
-            Exe_beq(target);
-            break;
-
-        case 0b000011://jal
-            Exe_jal(target);
-            break;
-
-        default:
-            break;
         }
     }
 };
@@ -642,6 +686,155 @@ map<int, string> Instruction::map_of_reg_str = map<int, string>();
 map<string, uint32_t> Instruction::map_of_asm = map<string, uint32_t>();
 
 map<uint32_t, string> Instruction::map_of_opcode = map<uint32_t, string>();
+
+void Instruction :: BitTypeConvert_add( )
+{
+    int opcode = this->getUValueFromBits(this->bi_instruction, 31, 26);
+    this->splt_instruction.push_back(this->map_of_opcode[opcode]);
+    int reg = this->getUValueFromBits(this->bi_instruction, 15, 11);            //des_register;
+    this->splt_instruction.push_back(this->map_of_reg_str[reg]);
+    int reg = this->getUValueFromBits(this->bi_instruction, 25, 21);
+    this->splt_instruction.push_back(this->map_of_reg_str[reg]);
+    int reg = this->getUValueFromBits(this->bi_instruction, 20, 16);
+    this->splt_instruction.push_back(this->map_of_reg_str[reg]);
+
+}
+
+void Instruction :: AsmTypeConvert_add( )
+{
+    int64_t adding_value = 0;
+    adding_value = 0b000000;
+    adding_value <<= 26;
+    this->bi_instruction += adding_value;
+    adding_value = map_of_reg_num[this->splt_instruction[1]];       
+    adding_value <<= 11;
+    this->bi_instruction += adding_value;
+    adding_value = map_of_reg_num[this->splt_instruction[2]];
+    adding_value <<= 21;
+    this->bi_instruction += adding_value;
+    adding_value = map_of_reg_num[this->splt_instruction[3]];
+    adding_value <<= 16;
+    this->bi_instruction += adding_value;
+    this->bi_instruction += 32;            
+    return;
+}
+
+void Instruction::Exe_add( RegAndMemory *target )
+{
+    if (this->instruction_type == InstructionType::ASMTYPE || this->instruction_type == InstructionType::NULLTYPE)
+    {
+        cout << "Error : not able to execute (null or asm only)" << endl;
+    }
+    else
+    {
+        int reg1 = this->getUValueFromBits(this->bi_instruction, 15, 11);
+        int reg2 = this->getUValueFromBits(this->bi_instruction, 25, 21);
+        int reg3 = this->getValueFromBits(this->bi_instruction, 20, 16);
+        cout << "reg1 : " << reg1
+            << "reg2 : " << reg2
+            << "reg3: " << reg3 << endl;
+        target->reg[reg1] = target->reg[reg2] + target->reg[reg3];
+    }
+}
+
+void Instruction :: BitTypeConvert_slt( )
+{
+    int opcode = this->getUValueFromBits(this->bi_instruction, 31, 26);
+    this->splt_instruction.push_back("slt" );
+    int reg = this->getUValueFromBits(this->bi_instruction, 15, 11);            //des_register;
+    this->splt_instruction.push_back(this->map_of_reg_str[reg]);
+    int reg = this->getUValueFromBits(this->bi_instruction, 25, 21);
+    this->splt_instruction.push_back(this->map_of_reg_str[reg]);
+    int reg = this->getUValueFromBits(this->bi_instruction, 20, 16);
+    this->splt_instruction.push_back(this->map_of_reg_str[reg]);
+
+}
+
+void Instruction :: AsmTypeConvert_slt( )
+{
+    int64_t adding_value = 0;
+    adding_value = 0b000000;
+    adding_value <<= 26;
+    this->bi_instruction += adding_value;
+    adding_value = map_of_reg_num[this->splt_instruction[1]];       
+    adding_value <<= 11;
+    this->bi_instruction += adding_value;
+    adding_value = map_of_reg_num[this->splt_instruction[2]];
+    adding_value <<= 21;
+    this->bi_instruction += adding_value;
+    adding_value = map_of_reg_num[this->splt_instruction[3]];
+    adding_value <<= 16;
+    this->bi_instruction += adding_value;
+    this->bi_instruction += 0b101010;             
+    return;
+}
+
+void Instruction::Exe_slt( RegAndMemory *target )
+{
+    if (this->instruction_type == InstructionType::ASMTYPE || this->instruction_type == InstructionType::NULLTYPE)
+    {
+        cout << "Error : not able to execute (null or asm only)" << endl;
+    }
+    else
+    {
+        int reg1 = this->getUValueFromBits(this->bi_instruction, 15, 11);
+        int reg2 = this->getUValueFromBits(this->bi_instruction, 25, 21);
+        int reg3 = this->getValueFromBits(this->bi_instruction, 20, 16);
+        cout << "reg1 : " << reg1
+            << "reg2 : " << reg2
+            << "reg3: " << reg3 << endl;
+        target->reg[reg1] = target->reg[reg2] < target->reg[reg3];
+    }
+}
+
+void Instruction :: BitTypeConvert_and( )
+{
+    int opcode = this->getUValueFromBits(this->bi_instruction, 31, 26);
+    this->splt_instruction.push_back( "and" );
+    int reg = this->getUValueFromBits(this->bi_instruction, 15, 11);            //des_register;
+    this->splt_instruction.push_back(this->map_of_reg_str[reg]);
+    int reg = this->getUValueFromBits(this->bi_instruction, 25, 21);
+    this->splt_instruction.push_back(this->map_of_reg_str[reg]);
+    int reg = this->getUValueFromBits(this->bi_instruction, 20, 16);
+    this->splt_instruction.push_back(this->map_of_reg_str[reg]);
+}
+
+void Instruction :: AsmTypeConvert_and( )
+{
+    int64_t adding_value = 0;
+    adding_value = 0b000000;
+    adding_value <<= 26;
+    this->bi_instruction += adding_value;
+    adding_value = map_of_reg_num[this->splt_instruction[1]];      
+    adding_value <<= 11;
+    this->bi_instruction += adding_value;
+    adding_value = map_of_reg_num[this->splt_instruction[2]];
+    adding_value <<= 21;
+    this->bi_instruction += adding_value;
+    adding_value = map_of_reg_num[this->splt_instruction[3]];
+    adding_value <<= 16;
+    this->bi_instruction += adding_value;
+    this->bi_instruction += 36;             
+    return;
+}
+
+void Instruction::Exe_and( RegAndMemory *target )
+{
+    if (this->instruction_type == InstructionType::ASMTYPE || this->instruction_type == InstructionType::NULLTYPE)
+    {
+        cout << "Error : not able to execute (null or asm only)" << endl;
+    }
+    else
+    {
+        int reg1 = this->getUValueFromBits(this->bi_instruction, 15, 11);
+        int reg2 = this->getUValueFromBits(this->bi_instruction, 25, 21);
+        int reg3 = this->getValueFromBits(this->bi_instruction, 20, 16);
+        cout << "reg1 : " << reg1
+            << "reg2 : " << reg2
+            << "reg3: " << reg3 << endl;
+        target->reg[reg1] = target->reg[reg2] & target->reg[reg3];
+    }
+}
 
 void Instruction::BitTypeConvert_addi()
 {
@@ -1441,7 +1634,7 @@ public:
                 break;
             }
         }
-        
+
         system("cls");
         cout << rm.toString() << endl;
         cout << "code run to the end, press enter to continue..." << endl;
@@ -1456,27 +1649,27 @@ public:
         {
             switch (this->interface_state)
             {
-            case UserInterface::NULLSTATE:
-                this->printUI();
-                break;
+                case UserInterface::NULLSTATE:
+                    this->printUI();
+                    break;
 
-            case UserInterface::STATE_ONE:
-                this->AsmConvert();
-                break;
-            
-            case UserInterface::STATE_TWO:
-                this->BiConvert();
-                break;
-            
-            case UserInterface::STATE_THREE:
-                this->VmExecute();
-                break;
+                case UserInterface::STATE_ONE:
+                    this->AsmConvert();
+                    break;
 
-            case UserInterface::STATE_FOUR:
-                break;
-            
-            default:
-                break;
+                case UserInterface::STATE_TWO:
+                    this->BiConvert();
+                    break;
+
+                case UserInterface::STATE_THREE:
+                    this->VmExecute();
+                    break;
+
+                case UserInterface::STATE_FOUR:
+                    break;
+
+                default:
+                    break;
             }
         }
     }
@@ -1507,4 +1700,3 @@ int main()
 
     return 0;
 }
-
