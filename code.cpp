@@ -2031,6 +2031,19 @@ public:
         // cout << "str exp" << (254-exponet) << endl;
         exponet = 254-exponet;
 
+        for(int i=fraction.length()-1; i>=0; i--)
+        {
+            if(fraction[i] == '1')
+            {
+                fraction[i] = '0';
+            }
+            else 
+            {
+                fraction[i] = '1';
+                break;
+            }
+        }
+
         stringstream sst;
         sst << bitset<8>(exponet);
         string str_exponet;
