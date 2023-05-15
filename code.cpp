@@ -37,9 +37,9 @@ public:
 
     void LoadCode(vector<uint32_t> code)
     {
-        for(int i=0; i<code.size(); i++)
+        for (int i = 0; i < code.size(); i++)
         {
-            this->SetUint32(code[i], 4*i);
+            this->SetUint32(code[i], 4 * i);
         }
     }
 
@@ -49,7 +49,7 @@ public:
     {
         uint64_t div = 1;
         div <<= 8;
-        for (int i=3; i>=0; i--)
+        for (int i = 3; i >= 0; i--)
         {
             memo[address + i] = (value % div);
             value >>= 8;
@@ -89,12 +89,12 @@ public:
             res += temps;
             res += " ";
 
-            if(flag == 3)
+            if (flag == 3)
             {
                 res += "\n";
                 flag = -1;
             }
-            else 
+            else
             {
                 res += "        ";
             }
@@ -110,7 +110,7 @@ public:
             res += temps;
             res += "   ";
             counter++;
-            pc_counter --;
+            pc_counter--;
             if (pc_counter == 0)
             {
                 res += " << ";
@@ -132,13 +132,13 @@ vector<string> split(string str, string delim)
     if ("" == str)
         return res;
 
-    char* strs = new char[str.length() + 1];
+    char *strs = new char[str.length() + 1];
     strcpy(strs, str.c_str());
 
-    char* d = new char[delim.length() + 1];
+    char *d = new char[delim.length() + 1];
     strcpy(d, delim.c_str());
 
-    char* p = strtok(strs, d);
+    char *p = strtok(strs, d);
 
     while (p)
     {
@@ -153,7 +153,7 @@ vector<string> split(string str, string delim)
 class Instruction
 {
 public:
-    RegAndMemory* target;
+    RegAndMemory *target;
 
     // register name -> register number
     static map<string, int> map_of_reg_num;
@@ -228,7 +228,7 @@ public:
             flag = -1;
             bi_code <<= 1;
         }
-        else 
+        else
         {
             bi_code <<= 1;
         }
@@ -246,7 +246,7 @@ public:
             }
             bi_code <<= 1;
         }
-        if(flag == -1)
+        if (flag == -1)
         {
             res += 1;
         }
@@ -332,7 +332,6 @@ public:
         map_of_reg_str[30] = "$fp";
         map_of_reg_str[31] = "$ra";
 
-        
         map_of_asm["slt"] = 0b000000;
         map_of_asm["add"] = 0b000000;
         map_of_asm["addi"] = 0b001000;
@@ -343,7 +342,6 @@ public:
         map_of_asm["beq"] = 0b000100;
         map_of_asm["jal"] = 0b000011;
         map_of_asm["jr"] = 0b000000;
-
 
         map_of_opcode[0b000000] = "add";
         map_of_opcode[0b001000] = "addi";
@@ -363,7 +361,7 @@ public:
         }
         else
         {
-            if(str.length() != 32)
+            if (str.length() != 32)
             {
                 this->instruction_type = NULLTYPE;
                 return;
@@ -380,22 +378,13 @@ public:
     void BitTypeConvert_beq();
     void BitTypeConvert_jal();
     void BitTypeConvert_jr();
-    void BitTypeConvert_add( );
-    void BitTypeConvert_and( );
-    void BitTypeConvert_slt( );
-    void BitTypeConvert_1();
-    void BitTypeConvert_2();
-    void BitTypeConvert_3();
-    void BitTypeConvert_4();
-    void BitTypeConvert_5();
-    void BitTypeConvert_6();
-    void BitTypeConvert_7();
-    void BitTypeConvert_8();
-    void BitTypeConvert_9();
+    void BitTypeConvert_add();
+    void BitTypeConvert_and();
+    void BitTypeConvert_slt();
 
     void BitTypeConvert()
     {
-        if(this->instruction_type == NULLTYPE)
+        if (this->instruction_type == NULLTYPE)
         {
             return;
         }
@@ -404,54 +393,54 @@ public:
 
         switch (opcode)
         {
-            case 0b000000: // add
-                switch (func)
-                {
-                    case 0b001000:
-                        BitTypeConvert_jr();
-                        break;
-                    case 0b100000:
-                        BitTypeConvert_add( );
-                        break;
-                    case 0b100100:
-                        BitTypeConvert_and( );
-                        break;  
-                    case 0b101010:
-                        BitTypeConvert_slt( );
-                        break; 
-                    default:
-                        break;
-                }
-                /* code */
+        case 0b000000: // add
+            switch (func)
+            {
+            case 0b001000:
+                BitTypeConvert_jr();
                 break;
-
-            case 0b001000: // addi
-                BitTypeConvert_addi();
+            case 0b100000:
+                BitTypeConvert_add();
                 break;
-
-            case 0b001100: // andi
-                BitTypeConvert_andi();
+            case 0b100100:
+                BitTypeConvert_and();
                 break;
-
-            case 0b001101: // ori
-                BitTypeConvert_ori();
+            case 0b101010:
+                BitTypeConvert_slt();
                 break;
-
-            case 0b001110: // xori
-                BitTypeConvert_xori();
-                break;
-
-            case 0b000100:
-                BitTypeConvert_beq();
-                break;
-
-            case 0b000011:
-                BitTypeConvert_jal();
-                break;
-
             default:
-                this->instruction_type = NULLTYPE;
                 break;
+            }
+            /* code */
+            break;
+
+        case 0b001000: // addi
+            BitTypeConvert_addi();
+            break;
+
+        case 0b001100: // andi
+            BitTypeConvert_andi();
+            break;
+
+        case 0b001101: // ori
+            BitTypeConvert_ori();
+            break;
+
+        case 0b001110: // xori
+            BitTypeConvert_xori();
+            break;
+
+        case 0b000100:
+            BitTypeConvert_beq();
+            break;
+
+        case 0b000011:
+            BitTypeConvert_jal();
+            break;
+
+        default:
+            this->instruction_type = NULLTYPE;
+            break;
         }
     }
 
@@ -463,21 +452,12 @@ public:
     void AsmTypeConvert_jal();
     void AsmTypeConvert_jr();
     void AsmTypeConvert_and();
-    void AsmTypeConvert_add( );
-    void AsmTypeConvert_slt( );
-    void AsmTypeConvert_1();
-    void AsmTypeConvert_2();
-    void AsmTypeConvert_3();
-    void AsmTypeConvert_4();
-    void AsmTypeConvert_5();
-    void AsmTypeConvert_6();
-    void AsmTypeConvert_7();
-    void AsmTypeConvert_8();
-    void AsmTypeConvert_9();
+    void AsmTypeConvert_add();
+    void AsmTypeConvert_slt();
 
     void AsmTypeConvert()
     {
-        if(this->splt_instruction.size() == 0)
+        if (this->splt_instruction.size() == 0)
         {
             this->instruction_type = NULLTYPE;
 
@@ -485,55 +465,56 @@ public:
         }
         switch (map_of_asm[this->splt_instruction[0]])
         {
-            case 0b000000: // add
+        case 0b000000: // add
 
-                if (this->splt_instruction[0] == "jr") {
-                    AsmTypeConvert_jr();
-                }
-                else if( this->splt_instruction[0] == "add" )
-                {
-                    AsmTypeConvert_add( );
-                }
-                else if( this->splt_instruction[0] == "and" )
-                {
-                    AsmTypeConvert_and( );
-                }
-                else if( this->splt_instruction[0] == "slt" )
-                {
-                    AsmTypeConvert_slt( );
-                }
-                else
-                    ;
-                /* code */
-                break;
+            if (this->splt_instruction[0] == "jr")
+            {
+                AsmTypeConvert_jr();
+            }
+            else if (this->splt_instruction[0] == "add")
+            {
+                AsmTypeConvert_add();
+            }
+            else if (this->splt_instruction[0] == "and")
+            {
+                AsmTypeConvert_and();
+            }
+            else if (this->splt_instruction[0] == "slt")
+            {
+                AsmTypeConvert_slt();
+            }
+            else
+                ;
+            /* code */
+            break;
 
-            case 0b001000: // addi
-                AsmTypeConvert_addi();
-                break;
-            case 0b001101: // ori
-                AsmTypeConvert_ori();
-                break;
+        case 0b001000: // addi
+            AsmTypeConvert_addi();
+            break;
+        case 0b001101: // ori
+            AsmTypeConvert_ori();
+            break;
 
-            case 0b001100: // andi
-                cout << "andi" << endl;
-                AsmTypeConvert_andi();
-                break;
+        case 0b001100: // andi
+            cout << "andi" << endl;
+            AsmTypeConvert_andi();
+            break;
 
-            case 0b001110: // xori
-                AsmTypeConvert_xori();
-                break;
+        case 0b001110: // xori
+            AsmTypeConvert_xori();
+            break;
 
-            case 0b000100://beq
-                AsmTypeConvert_beq();
-                break;
+        case 0b000100: // beq
+            AsmTypeConvert_beq();
+            break;
 
-            case 0b000011://jal
-                AsmTypeConvert_jal();
-                break;
+        case 0b000011: // jal
+            AsmTypeConvert_jal();
+            break;
 
-            default:
-                this->instruction_type = NULLTYPE;
-                break;
+        default:
+            this->instruction_type = NULLTYPE;
+            break;
         }
     }
 
@@ -541,21 +522,21 @@ public:
     {
         switch (this->instruction_type)
         {
-            case Instruction::InstructionType::NULLTYPE:
-                // cout << "NULLTYPE fail to complete" << endl;
-                break;
-            case Instruction::InstructionType::BITYPE:
-                this->BitTypeConvert();
-                break;
-            case Instruction::InstructionType::ASMTYPE:
-                this->AsmTypeConvert();
-                break;
-            case Instruction::InstructionType::COMPLETETYPE:
-                cout << "Already completed" << endl;
-                break;
+        case Instruction::InstructionType::NULLTYPE:
+            // cout << "NULLTYPE fail to complete" << endl;
+            break;
+        case Instruction::InstructionType::BITYPE:
+            this->BitTypeConvert();
+            break;
+        case Instruction::InstructionType::ASMTYPE:
+            this->AsmTypeConvert();
+            break;
+        case Instruction::InstructionType::COMPLETETYPE:
+            cout << "Already completed" << endl;
+            break;
 
-            default:
-                break;
+        default:
+            break;
         }
     }
 
@@ -565,13 +546,13 @@ public:
         int counter = 0;
         for (string stp : splt_instruction)
         {
-            counter ++;
+            counter++;
             res += stp;
-            if(counter > 1 && counter != splt_instruction.size())
+            if (counter > 1 && counter != splt_instruction.size())
             {
                 res += ", ";
             }
-            else 
+            else
             {
                 res += " ";
             }
@@ -580,27 +561,18 @@ public:
         return res;
     }
 
-    void Exe_addi(RegAndMemory* target);
-    void Exe_andi(RegAndMemory* target);
-    void Exe_ori(RegAndMemory* target);
-    void Exe_xori(RegAndMemory* target);
-    void Exe_beq(RegAndMemory* target);
-    void Exe_jal(RegAndMemory* target);
-    void Exe_jr(RegAndMemory* target);
-    void Exe_add(RegAndMemory* target);
-    void Exe_and(RegAndMemory* target);
-    void Exe_slt(RegAndMemory* target);
-    void Exe_1(RegAndMemory* target);
-    void Exe_2(RegAndMemory* target);
-    void Exe_3(RegAndMemory* target);
-    void Exe_4(RegAndMemory* target);
-    void Exe_5(RegAndMemory* target);
-    void Exe_6(RegAndMemory* target);
-    void Exe_7(RegAndMemory* target);
-    void Exe_8(RegAndMemory* target);
-    void Exe_9(RegAndMemory* target);
+    void Exe_addi(RegAndMemory *target);
+    void Exe_andi(RegAndMemory *target);
+    void Exe_ori(RegAndMemory *target);
+    void Exe_xori(RegAndMemory *target);
+    void Exe_beq(RegAndMemory *target);
+    void Exe_jal(RegAndMemory *target);
+    void Exe_jr(RegAndMemory *target);
+    void Exe_add(RegAndMemory *target);
+    void Exe_and(RegAndMemory *target);
+    void Exe_slt(RegAndMemory *target);
 
-    void Execute(RegAndMemory* target)
+    void Execute(RegAndMemory *target)
     {
         int opcode = Instruction::getUValueFromBits(this->bi_instruction, 31, 26);
 
@@ -608,53 +580,53 @@ public:
 
         switch (opcode)
         {
-            case 0b000000:
-                switch (func)
-                {
-                    case 0b001000://jr
-                        Exe_jr(target);
-                        break;
-                    case 0b100000:
-                        Exe_add( target );
-                        break;
-                    case 0b100100:
-                        Exe_and( target );
-                        break;
-                    case 0b101010:
-                        Exe_slt( target );
-                        break;
-                    default:
-                        break;
-                }
-                /* code */
+        case 0b000000:
+            switch (func)
+            {
+            case 0b001000: // jr
+                Exe_jr(target);
                 break;
-
-            case 0b001000: // addi
-                Exe_addi(target);
+            case 0b100000:
+                Exe_add(target);
                 break;
-
-            case 0b001100: // andi
-                Exe_andi(target);
+            case 0b100100:
+                Exe_and(target);
                 break;
-
-            case 0b001101: // ori
-                Exe_ori(target);
+            case 0b101010:
+                Exe_slt(target);
                 break;
-
-            case 0b001110: // xori
-                Exe_xori(target);
-                break;
-
-            case 0b000100://beq
-                Exe_beq(target);
-                break;
-
-            case 0b000011://jal
-                Exe_jal(target);
-                break;
-
             default:
                 break;
+            }
+            /* code */
+            break;
+
+        case 0b001000: // addi
+            Exe_addi(target);
+            break;
+
+        case 0b001100: // andi
+            Exe_andi(target);
+            break;
+
+        case 0b001101: // ori
+            Exe_ori(target);
+            break;
+
+        case 0b001110: // xori
+            Exe_xori(target);
+            break;
+
+        case 0b000100: // beq
+            Exe_beq(target);
+            break;
+
+        case 0b000011: // jal
+            Exe_jal(target);
+            break;
+
+        default:
+            break;
         }
     }
 };
@@ -663,7 +635,7 @@ int RegAndMemory::Execute()
 {
     uint32_t value = this->GetUint32(pc);
 
-    if(value == 0)
+    if (value == 0)
     {
         return 0;
     }
@@ -687,26 +659,25 @@ map<string, uint32_t> Instruction::map_of_asm = map<string, uint32_t>();
 
 map<uint32_t, string> Instruction::map_of_opcode = map<uint32_t, string>();
 
-void Instruction :: BitTypeConvert_add( )
+void Instruction ::BitTypeConvert_add()
 {
     int opcode = this->getUValueFromBits(this->bi_instruction, 31, 26);
     this->splt_instruction.push_back(this->map_of_opcode[opcode]);
-    int reg = this->getUValueFromBits(this->bi_instruction, 15, 11);            //des_register;
+    int reg = this->getUValueFromBits(this->bi_instruction, 15, 11); // des_register;
     this->splt_instruction.push_back(this->map_of_reg_str[reg]);
     reg = this->getUValueFromBits(this->bi_instruction, 25, 21);
     this->splt_instruction.push_back(this->map_of_reg_str[reg]);
     reg = this->getUValueFromBits(this->bi_instruction, 20, 16);
     this->splt_instruction.push_back(this->map_of_reg_str[reg]);
-
 }
 
-void Instruction :: AsmTypeConvert_add( )
+void Instruction ::AsmTypeConvert_add()
 {
     int64_t adding_value = 0;
     adding_value = 0b000000;
     adding_value <<= 26;
     this->bi_instruction += adding_value;
-    adding_value = map_of_reg_num[this->splt_instruction[1]];       
+    adding_value = map_of_reg_num[this->splt_instruction[1]];
     adding_value <<= 11;
     this->bi_instruction += adding_value;
     adding_value = map_of_reg_num[this->splt_instruction[2]];
@@ -715,11 +686,11 @@ void Instruction :: AsmTypeConvert_add( )
     adding_value = map_of_reg_num[this->splt_instruction[3]];
     adding_value <<= 16;
     this->bi_instruction += adding_value;
-    this->bi_instruction += 32;            
+    this->bi_instruction += 32;
     return;
 }
 
-void Instruction::Exe_add( RegAndMemory *target )
+void Instruction::Exe_add(RegAndMemory *target)
 {
     if (this->instruction_type == InstructionType::ASMTYPE || this->instruction_type == InstructionType::NULLTYPE)
     {
@@ -731,32 +702,31 @@ void Instruction::Exe_add( RegAndMemory *target )
         int reg2 = this->getUValueFromBits(this->bi_instruction, 25, 21);
         int reg3 = this->getValueFromBits(this->bi_instruction, 20, 16);
         cout << "reg1 : " << reg1
-            << "reg2 : " << reg2
-            << "reg3: " << reg3 << endl;
+             << "reg2 : " << reg2
+             << "reg3: " << reg3 << endl;
         target->reg[reg1] = target->reg[reg2] + target->reg[reg3];
     }
 }
 
-void Instruction :: BitTypeConvert_slt( )
+void Instruction ::BitTypeConvert_slt()
 {
     int opcode = this->getUValueFromBits(this->bi_instruction, 31, 26);
-    this->splt_instruction.push_back("slt" );
-    int reg = this->getUValueFromBits(this->bi_instruction, 15, 11);            //des_register;
+    this->splt_instruction.push_back("slt");
+    int reg = this->getUValueFromBits(this->bi_instruction, 15, 11); // des_register;
     this->splt_instruction.push_back(this->map_of_reg_str[reg]);
     reg = this->getUValueFromBits(this->bi_instruction, 25, 21);
     this->splt_instruction.push_back(this->map_of_reg_str[reg]);
     reg = this->getUValueFromBits(this->bi_instruction, 20, 16);
     this->splt_instruction.push_back(this->map_of_reg_str[reg]);
-
 }
 
-void Instruction :: AsmTypeConvert_slt( )
+void Instruction ::AsmTypeConvert_slt()
 {
     int64_t adding_value = 0;
     adding_value = 0b000000;
     adding_value <<= 26;
     this->bi_instruction += adding_value;
-    adding_value = map_of_reg_num[this->splt_instruction[1]];       
+    adding_value = map_of_reg_num[this->splt_instruction[1]];
     adding_value <<= 11;
     this->bi_instruction += adding_value;
     adding_value = map_of_reg_num[this->splt_instruction[2]];
@@ -765,11 +735,11 @@ void Instruction :: AsmTypeConvert_slt( )
     adding_value = map_of_reg_num[this->splt_instruction[3]];
     adding_value <<= 16;
     this->bi_instruction += adding_value;
-    this->bi_instruction += 0b101010;             
+    this->bi_instruction += 0b101010;
     return;
 }
 
-void Instruction::Exe_slt( RegAndMemory *target )
+void Instruction::Exe_slt(RegAndMemory *target)
 {
     if (this->instruction_type == InstructionType::ASMTYPE || this->instruction_type == InstructionType::NULLTYPE)
     {
@@ -781,17 +751,17 @@ void Instruction::Exe_slt( RegAndMemory *target )
         int reg2 = this->getUValueFromBits(this->bi_instruction, 25, 21);
         int reg3 = this->getValueFromBits(this->bi_instruction, 20, 16);
         cout << "reg1 : " << reg1
-            << "reg2 : " << reg2
-            << "reg3: " << reg3 << endl;
+             << "reg2 : " << reg2
+             << "reg3: " << reg3 << endl;
         target->reg[reg1] = target->reg[reg2] < target->reg[reg3];
     }
 }
 
-void Instruction :: BitTypeConvert_and( )
+void Instruction ::BitTypeConvert_and()
 {
     int opcode = this->getUValueFromBits(this->bi_instruction, 31, 26);
-    this->splt_instruction.push_back( "and" );
-    int reg = this->getUValueFromBits(this->bi_instruction, 15, 11);            //des_register;
+    this->splt_instruction.push_back("and");
+    int reg = this->getUValueFromBits(this->bi_instruction, 15, 11); // des_register;
     this->splt_instruction.push_back(this->map_of_reg_str[reg]);
     reg = this->getUValueFromBits(this->bi_instruction, 25, 21);
     this->splt_instruction.push_back(this->map_of_reg_str[reg]);
@@ -799,13 +769,13 @@ void Instruction :: BitTypeConvert_and( )
     this->splt_instruction.push_back(this->map_of_reg_str[reg]);
 }
 
-void Instruction :: AsmTypeConvert_and( )
+void Instruction ::AsmTypeConvert_and()
 {
     int64_t adding_value = 0;
     adding_value = 0b000000;
     adding_value <<= 26;
     this->bi_instruction += adding_value;
-    adding_value = map_of_reg_num[this->splt_instruction[1]];      
+    adding_value = map_of_reg_num[this->splt_instruction[1]];
     adding_value <<= 11;
     this->bi_instruction += adding_value;
     adding_value = map_of_reg_num[this->splt_instruction[2]];
@@ -814,11 +784,11 @@ void Instruction :: AsmTypeConvert_and( )
     adding_value = map_of_reg_num[this->splt_instruction[3]];
     adding_value <<= 16;
     this->bi_instruction += adding_value;
-    this->bi_instruction += 36;             
+    this->bi_instruction += 36;
     return;
 }
 
-void Instruction::Exe_and( RegAndMemory *target )
+void Instruction::Exe_and(RegAndMemory *target)
 {
     if (this->instruction_type == InstructionType::ASMTYPE || this->instruction_type == InstructionType::NULLTYPE)
     {
@@ -830,8 +800,8 @@ void Instruction::Exe_and( RegAndMemory *target )
         int reg2 = this->getUValueFromBits(this->bi_instruction, 25, 21);
         int reg3 = this->getValueFromBits(this->bi_instruction, 20, 16);
         cout << "reg1 : " << reg1
-            << "reg2 : " << reg2
-            << "reg3: " << reg3 << endl;
+             << "reg2 : " << reg2
+             << "reg3: " << reg3 << endl;
         target->reg[reg1] = target->reg[reg2] & target->reg[reg3];
     }
 }
@@ -865,7 +835,7 @@ void Instruction::AsmTypeConvert_addi()
     return;
 }
 
-void Instruction::Exe_addi(RegAndMemory* target)
+void Instruction::Exe_addi(RegAndMemory *target)
 {
     if (this->instruction_type == InstructionType::ASMTYPE || this->instruction_type == InstructionType::NULLTYPE)
     {
@@ -877,8 +847,8 @@ void Instruction::Exe_addi(RegAndMemory* target)
         int reg2 = this->getUValueFromBits(this->bi_instruction, 20, 16);
         int value = this->getValueFromBits(this->bi_instruction, 15, 0);
         cout << "reg1 : " << reg1
-            << "reg2 : " << reg2
-            << "val: " << value << endl;
+             << "reg2 : " << reg2
+             << "val: " << value << endl;
         target->reg[reg1] = target->reg[reg2] + value;
     }
 }
@@ -912,7 +882,7 @@ void Instruction::AsmTypeConvert_andi()
     return;
 }
 
-void Instruction::Exe_andi(RegAndMemory* target)
+void Instruction::Exe_andi(RegAndMemory *target)
 {
     if (this->instruction_type == InstructionType::ASMTYPE || this->instruction_type == InstructionType::NULLTYPE)
     {
@@ -959,7 +929,7 @@ void Instruction::AsmTypeConvert_ori()
     return;
 }
 
-void Instruction::Exe_ori(RegAndMemory* target)
+void Instruction::Exe_ori(RegAndMemory *target)
 {
     if (this->instruction_type == InstructionType::ASMTYPE || this->instruction_type == InstructionType::NULLTYPE)
     {
@@ -1006,7 +976,7 @@ void Instruction::AsmTypeConvert_xori()
     return;
 }
 
-void Instruction::Exe_xori(RegAndMemory* target)
+void Instruction::Exe_xori(RegAndMemory *target)
 {
     if (this->instruction_type == InstructionType::ASMTYPE || this->instruction_type == InstructionType::NULLTYPE)
     {
@@ -1023,7 +993,6 @@ void Instruction::Exe_xori(RegAndMemory* target)
         target->reg[reg1] = target->reg[reg2] ^ imm;
     }
 }
-
 
 void Instruction::BitTypeConvert_beq()
 {
@@ -1054,7 +1023,7 @@ void Instruction::AsmTypeConvert_beq()
     return;
 }
 
-void Instruction::Exe_beq(RegAndMemory* target)
+void Instruction::Exe_beq(RegAndMemory *target)
 {
     if (this->instruction_type == InstructionType::ASMTYPE || this->instruction_type == InstructionType::NULLTYPE)
     {
@@ -1068,13 +1037,12 @@ void Instruction::Exe_beq(RegAndMemory* target)
         cout << "reg1: " << reg1 << " reg2: " << reg2 << " offset: " << offset << endl;
         // only for testing purpose
         // target->reg[reg2] = 16;
-        if (target->reg[reg1] == target->reg[reg2]) {
+        if (target->reg[reg1] == target->reg[reg2])
+        {
             target->pc = target->pc + offset;
         }
     }
 }
-
-
 
 void Instruction::BitTypeConvert_jal()
 {
@@ -1095,7 +1063,7 @@ void Instruction::AsmTypeConvert_jal()
     return;
 }
 
-void Instruction::Exe_jal(RegAndMemory* target)
+void Instruction::Exe_jal(RegAndMemory *target)
 {
     if (this->instruction_type == InstructionType::ASMTYPE || this->instruction_type == InstructionType::NULLTYPE)
     {
@@ -1103,7 +1071,7 @@ void Instruction::Exe_jal(RegAndMemory* target)
     }
     else
     {
-        int ra = 31;//map_of_reg_num["$ra"]
+        int ra = 31; // map_of_reg_num["$ra"]
 
         int addr_target = this->getUValueFromBits(this->bi_instruction, 25, 0);
         cout << " target: " << addr_target << endl;
@@ -1113,7 +1081,6 @@ void Instruction::Exe_jal(RegAndMemory* target)
         target->pc = (target->pc & 0xFA000000) + addr_target;
     }
 }
-
 
 void Instruction::BitTypeConvert_jr()
 {
@@ -1139,7 +1106,7 @@ void Instruction::AsmTypeConvert_jr()
     return;
 }
 
-void Instruction::Exe_jr(RegAndMemory* target)
+void Instruction::Exe_jr(RegAndMemory *target)
 {
     if (this->instruction_type == InstructionType::ASMTYPE || this->instruction_type == InstructionType::NULLTYPE)
     {
@@ -1151,117 +1118,6 @@ void Instruction::Exe_jr(RegAndMemory* target)
         cout << " reg1: " << reg1 << endl;
         target->pc = target->reg[reg1];
     }
-}
-
-
-
-
-void Instruction::BitTypeConvert_1()
-{
-}
-
-void Instruction::AsmTypeConvert_1()
-{
-}
-
-void Instruction::Exe_1(RegAndMemory* target)
-{
-}
-
-void Instruction::BitTypeConvert_2()
-{
-}
-
-void Instruction::AsmTypeConvert_2()
-{
-}
-
-void Instruction::Exe_2(RegAndMemory* target)
-{
-}
-
-void Instruction::BitTypeConvert_3()
-{
-}
-
-void Instruction::AsmTypeConvert_3()
-{
-}
-
-void Instruction::Exe_3(RegAndMemory* target)
-{
-}
-
-void Instruction::BitTypeConvert_4()
-{
-}
-
-void Instruction::AsmTypeConvert_4()
-{
-}
-
-void Instruction::Exe_4(RegAndMemory* target)
-{
-}
-
-void Instruction::BitTypeConvert_5()
-{
-}
-
-void Instruction::AsmTypeConvert_5()
-{
-}
-
-void Instruction::Exe_5(RegAndMemory* target)
-{
-}
-
-void Instruction::BitTypeConvert_6()
-{
-}
-
-void Instruction::AsmTypeConvert_6()
-{
-}
-
-void Instruction::Exe_6(RegAndMemory* target)
-{
-}
-
-void Instruction::BitTypeConvert_7()
-{
-}
-
-void Instruction::AsmTypeConvert_7()
-{
-}
-
-void Instruction::Exe_7(RegAndMemory* target)
-{
-}
-
-void Instruction::BitTypeConvert_8()
-{
-}
-
-void Instruction::AsmTypeConvert_8()
-{
-}
-
-void Instruction::Exe_8(RegAndMemory* target)
-{
-}
-
-void Instruction::BitTypeConvert_9()
-{
-}
-
-void Instruction::AsmTypeConvert_9()
-{
-}
-
-void Instruction::Exe_9(RegAndMemory* target)
-{
 }
 
 void test_addi_instruction()
@@ -1373,7 +1229,6 @@ void test_xori_instruction()
     cout << reg_mem.toString() << endl;
 }
 
-
 void test_jal_instruction()
 {
     // Create a new instance of RegAndMemory
@@ -1402,7 +1257,6 @@ void test_jal_instruction()
     cout << reg_mem.toString() << endl;
     cout << "pc: " << reg_mem.pc << endl;
 }
-
 
 void test_beq_instruction()
 {
@@ -1475,17 +1329,15 @@ void running_test()
     cout << buffer << endl;
 }
 
-
 string StringCover(string str, int length, char cover = ' ')
 {
-    for(int i=0; i<(str.length()-length); i++)
+    for (int i = 0; i < (str.length() - length); i++)
     {
         str = cover + str;
     }
 
     return str;
 }
-
 
 // 00000000010000000001000
 //        index2    index1
@@ -1530,7 +1382,7 @@ static int64_t getValueFromBits(uint32_t bi_code, int index2, int index1)
         flag = -1;
         bi_code <<= 1;
     }
-    else 
+    else
     {
         bi_code <<= 1;
     }
@@ -1548,7 +1400,7 @@ static int64_t getValueFromBits(uint32_t bi_code, int index2, int index1)
         }
         bi_code <<= 1;
     }
-    if(flag == -1)
+    if (flag == -1)
     {
         res += 1;
     }
@@ -1556,30 +1408,29 @@ static int64_t getValueFromBits(uint32_t bi_code, int index2, int index1)
     return res * flag;
 }
 
-class CodeType 
+class CodeType
 {
 public:
-
-    virtual CodeType* add(CodeType* another)
+    virtual CodeType *add(CodeType *another)
     {
         return nullptr;
     }
 
-    virtual CodeType* sub(CodeType* another)
+    virtual CodeType *sub(CodeType *another)
     {
         return nullptr;
     }
 
-    virtual CodeType* mul(CodeType* another)
+    virtual CodeType *mul(CodeType *another)
     {
         return nullptr;
     }
 
-    virtual CodeType* div(CodeType* another)
+    virtual CodeType *div(CodeType *another)
     {
         return nullptr;
     }
-    
+
     virtual string toString()
     {
         return "";
@@ -1589,14 +1440,13 @@ public:
 class IntType : public CodeType
 {
 public:
-
     int64_t value;
 
     string res;
 
     static int length;
 
-    IntType(int is_empty){}
+    IntType(int is_empty) {}
 
     IntType(int64_t value, int length)
     {
@@ -1620,14 +1470,14 @@ public:
         int type;
         cin >> type;
 
-        if(type == 1)
+        if (type == 1)
         {
             cout << "value :" << endl;
             cout << " >> ";
             cin >> value;
             this->res = IntToBiString(value, length);
         }
-        else 
+        else
         {
             cout << "string : " << endl;
             cout << " >> ";
@@ -1637,38 +1487,38 @@ public:
         }
     }
 
-    CodeType* add(CodeType* another)
+    CodeType *add(CodeType *another)
     {
-        CodeType* res_code = new IntType(1);
-        ((IntType*)res_code)->value = this->value + ((IntType*)another)->value;
-        ((IntType*)res_code)->res = IntToBiString(((IntType*)res_code)->value, length);
+        CodeType *res_code = new IntType(1);
+        ((IntType *)res_code)->value = this->value + ((IntType *)another)->value;
+        ((IntType *)res_code)->res = IntToBiString(((IntType *)res_code)->value, length);
 
         return res_code;
     }
 
-    CodeType* sub(CodeType* another)
+    CodeType *sub(CodeType *another)
     {
-        CodeType* res_code = new IntType(1);
-        ((IntType*)res_code)->value = this->value - ((IntType*)another)->value;
-        ((IntType*)res_code)->res = IntToBiString(((IntType*)res_code)->value, length);
+        CodeType *res_code = new IntType(1);
+        ((IntType *)res_code)->value = this->value - ((IntType *)another)->value;
+        ((IntType *)res_code)->res = IntToBiString(((IntType *)res_code)->value, length);
 
         return res_code;
     }
 
-    CodeType* mul(CodeType* another)
+    CodeType *mul(CodeType *another)
     {
-        CodeType* res_code = new IntType(1);
-        ((IntType*)res_code)->value = this->value * ((IntType*)another)->value;
-        ((IntType*)res_code)->res = IntToBiString(((IntType*)res_code)->value, 2*length);
+        CodeType *res_code = new IntType(1);
+        ((IntType *)res_code)->value = this->value * ((IntType *)another)->value;
+        ((IntType *)res_code)->res = IntToBiString(((IntType *)res_code)->value, 2 * length);
 
         return res_code;
     }
 
-    CodeType* div(CodeType* another)
+    CodeType *div(CodeType *another)
     {
-        CodeType* res_code = new IntType(1);
-        ((IntType*)res_code)->value = this->value / ((IntType*)another)->value;
-        ((IntType*)res_code)->res = IntToBiString(((IntType*)res_code)->value, length);
+        CodeType *res_code = new IntType(1);
+        ((IntType *)res_code)->value = this->value / ((IntType *)another)->value;
+        ((IntType *)res_code)->res = IntToBiString(((IntType *)res_code)->value, length);
 
         return res_code;
     }
@@ -1676,18 +1526,18 @@ public:
     static int error_val;
 
     // "1 0001 0010 1000" -> -3800
-    static int64_t BiStringToInt(string str, int length = 32) 
+    static int64_t BiStringToInt(string str, int length = 32)
     {
         IntType::error_val = 0;
 
-        if(str.length() > length)
+        if (str.length() > length)
         {
             cout << "string length doesn't match" << endl;
             IntType::error_val = -1;
 
             return 0;
         }
-        else 
+        else
         {
             str = StringCover(str, length);
         }
@@ -1695,31 +1545,31 @@ public:
         int64_t value = 0;
         int flag = 1;
 
-        if(str[0] == '1')
+        if (str[0] == '1')
         {
             flag = -1;
         }
 
-        for(int i=1; i<length; i++)
+        for (int i = 1; i < length; i++)
         {
             value <<= 1;
-            if(flag == 1)
+            if (flag == 1)
             {
-                if(str[i] == '1')
+                if (str[i] == '1')
                 {
                     value += 1;
                 }
             }
-            else 
+            else
             {
-                if(str[i] == '0')
+                if (str[i] == '0')
                 {
                     value += 1;
                 }
             }
         }
 
-        if(flag == -1)
+        if (flag == -1)
         {
             value += 1;
         }
@@ -1731,48 +1581,48 @@ public:
     static string IntToBiString(int64_t value, int length = 32)
     {
         IntType::error_val = 0;
-        int64_t max_value = pow(2, min(length-1, 62)) + 0.01;
+        int64_t max_value = pow(2, min(length - 1, 62)) + 0.01;
 
         char adding[3] = "01";
 
-        if(value < (-max_value) || (max_value-1) < value)
+        if (value < (-max_value) || (max_value - 1) < value)
         {
             cout << "value overflow" << endl;
-            cout << "range : [" << -max_value << "," << (max_value-1) << "]" << endl;
+            cout << "range : [" << -max_value << "," << (max_value - 1) << "]" << endl;
             cout << "income value: " << value << endl;
             cout << "income length: " << length << endl;
-            
+
             IntType::error_val = -1;
             return "";
         }
 
         string res = "";
         int flag = 1;
-        if(value < 0)
+        if (value < 0)
         {
-            value = -value -1;
+            value = -value - 1;
             res += "1";
             flag = 0;
         }
-        else 
+        else
         {
             res += "0";
             flag = 1;
         }
 
-        while(max_value)
+        while (max_value)
         {
             max_value /= 2;
-            if(max_value == 0)
+            if (max_value == 0)
             {
                 break;
             }
-            if(value >= max_value)
+            if (value >= max_value)
             {
                 res += adding[flag];
                 value %= max_value;
             }
-            else 
+            else
             {
                 res += adding[!flag];
             }
@@ -1784,28 +1634,28 @@ public:
     static string Adder(string value_1, string value_2, int length = 32, int is_print = 1)
     {
         string add_res = "";
-        for(int i=0; i<length; i++)
+        for (int i = 0; i < length; i++)
         {
             add_res += "0";
         }
-            
-        if(is_print)
+
+        if (is_print)
         {
             cout << "value_1 : " << value_1 << "  " << BiStringToInt(value_1, length) << endl;
             cout << "value_2 : " << value_2 << "  " << BiStringToInt(value_2, length) << endl;
         }
 
         int carry = 0;
-        for(int i=31; i>=0; i--)
+        for (int i = 31; i >= 0; i--)
         {
-            int res = carry + value_1[i] + value_2[i] - 2*'0';
-            carry = res /2;
+            int res = carry + value_1[i] + value_2[i] - 2 * '0';
+            carry = res / 2;
             res %= 2;
             add_res[i] = '0' + res;
-            
-            if(is_print)
+
+            if (is_print)
             {
-                cout << "step " << StringCover(to_string(32-i), 2) << " : " << add_res << " , carry = " << carry << endl;
+                cout << "step " << StringCover(to_string(32 - i), 2) << " : " << add_res << " , carry = " << carry << endl;
             }
         }
 
@@ -1814,32 +1664,32 @@ public:
 
     static string Suber(string value_1, string value_2, int length = 32, int is_print = 1)
     {
-        if(is_print)
+        if (is_print)
         {
             cout << "value_1 : " << value_1 << "  " << BiStringToInt(value_1, length) << endl;
             cout << "value_2 : " << value_2 << "  " << BiStringToInt(value_2, length) << endl;
         }
         value_2 = IntToBiString(-BiStringToInt(value_2, length), length);
 
-        if(is_print)
+        if (is_print)
             cout << "Two's complement of value_2: " << value_2 << endl;
 
         string sub_res = "";
-        for(int i=0; i<length; i++)
+        for (int i = 0; i < length; i++)
         {
             sub_res += "0";
         }
 
         int carry = 0;
-        for(int i=31; i>=0; i--)
+        for (int i = 31; i >= 0; i--)
         {
-            int res = carry + value_1[i] + value_2[i] - 2*'0';
-            carry = res /2;
+            int res = carry + value_1[i] + value_2[i] - 2 * '0';
+            carry = res / 2;
             res %= 2;
             sub_res[i] = '0' + res;
 
-            if(is_print)
-                cout << "step " << StringCover(to_string(32-i), 2) << " : " << sub_res << " , carry = " << carry << endl;
+            if (is_print)
+                cout << "step " << StringCover(to_string(32 - i), 2) << " : " << sub_res << " , carry = " << carry << endl;
         }
 
         return sub_res;
@@ -1849,18 +1699,18 @@ public:
     {
         int64_t v_1 = BiStringToInt(value_1, length);
         int64_t v_2 = BiStringToInt(value_2, length);
-        int64_t res = v_1*v_2;
+        int64_t res = v_1 * v_2;
 
-        return IntToBiString(res, 2*length);
+        return IntToBiString(res, 2 * length);
     }
 
     static string Diver(string value_1, string value_2, int length = 32)
     {
         int64_t v_1 = BiStringToInt(value_1, length);
         int64_t v_2 = BiStringToInt(value_2, length);
-        int64_t res = v_1/v_2;
+        int64_t res = v_1 / v_2;
 
-        return IntToBiString(res, 2*length);
+        return IntToBiString(res, 2 * length);
     }
 
     string toString()
@@ -1877,10 +1727,9 @@ int IntType::error_val = 0;
 
 int IntType::length = 32;
 
-class FloatType : public CodeType 
+class FloatType : public CodeType
 {
 public:
-
     float value;
 
     string res;
@@ -1907,14 +1756,14 @@ public:
         int type;
         cin >> type;
 
-        if(type == 1)
+        if (type == 1)
         {
             cout << "value :" << endl;
             cout << " >> ";
             cin >> value;
             this->res = FloatToBiString(value);
         }
-        else 
+        else
         {
             cout << "string : " << endl;
             cout << " >> ";
@@ -1931,23 +1780,23 @@ public:
         uint32_t fraction = 0;
         int bias = 127;
 
-        if(str[0] == '1')
+        if (str[0] == '1')
         {
             flag = -1;
         }
 
-        for(int i=1; i<9; i++)
+        for (int i = 1; i < 9; i++)
         {
             exponent <<= 1;
-            if(str[i] == '1')
+            if (str[i] == '1')
                 exponent += 1;
         }
-        
+
         double t = 0.5;
         double x = 0;
-        for(int i=9; i<32; i++)
+        for (int i = 9; i < 32; i++)
         {
-            if(str[i] == '1')
+            if (str[i] == '1')
                 x += t;
             t /= 2;
         }
@@ -1958,9 +1807,9 @@ public:
         // cout << "d: " << exponent-bias << endl;
         // cout << "pow: " << pow(2, exponent-bias) << endl;
 
-        value = flag*(1.0+x)*pow(2, exponent-bias);
+        value = flag * (1.0 + x) * pow(2, exponent - bias);
 
-        return value;        
+        return value;
     }
 
     static string FloatToBiString(float value)
@@ -1970,31 +1819,31 @@ public:
         int exponet = 1;
         int flag = 0;
 
-        if(value < 0)
+        if (value < 0)
         {
             flag = 1;
             value = -value;
         }
 
-        while(v > value)
+        while (v > value)
         {
             v /= 2;
             exponet += 1;
         }
-        
+
         string fraction = "";
 
         value -= v;
 
-        for(int i=0; i<22; i++)
+        for (int i = 0; i < 22; i++)
         {
             v /= 2;
-            if(value > v)
+            if (value > v)
             {
                 fraction += "1";
                 value -= v;
             }
-            else 
+            else
             {
                 fraction += "0";
             }
@@ -2010,34 +1859,33 @@ public:
         // 0--1
         double b2 = v / 2;
         double d2 = d_value - b2;
-        if(value > v)
+        if (value > v)
         {
             fraction += '1';
         }
-        else if(value < b2)
+        else if (value < b2)
         {
             fraction += '0';
         }
-        else if(d1 < d2)
+        else if (d1 < d2)
         {
             fraction += '1';
         }
-        else if(d2 < d1)
+        else if (d2 < d1)
         {
             fraction += '0';
         }
-
 
         // cout << "str exp" << (254-exponet) << endl;
-        exponet = 254-exponet;
+        exponet = 254 - exponet;
 
-        for(int i=fraction.length()-1; i>=0; i--)
+        for (int i = fraction.length() - 1; i >= 0; i--)
         {
-            if(fraction[i] == '1')
+            if (fraction[i] == '1')
             {
                 fraction[i] = '0';
             }
-            else 
+            else
             {
                 fraction[i] = '1';
                 break;
@@ -2056,38 +1904,38 @@ public:
         return res;
     }
 
-    virtual CodeType* add(CodeType* another)
+    virtual CodeType *add(CodeType *another)
     {
-        CodeType* new_code = new FloatType(1);
-        ((FloatType*)new_code)->value = this->value + ((FloatType*)another)->value;
-        ((FloatType*)new_code)->res = FloatToBiString(((FloatType*)new_code)->value);
+        CodeType *new_code = new FloatType(1);
+        ((FloatType *)new_code)->value = this->value + ((FloatType *)another)->value;
+        ((FloatType *)new_code)->res = FloatToBiString(((FloatType *)new_code)->value);
         return new_code;
     }
 
-    virtual CodeType* sub(CodeType* another)
+    virtual CodeType *sub(CodeType *another)
     {
-        CodeType* new_code = new FloatType(1);
-        ((FloatType*)new_code)->value = this->value - ((FloatType*)another)->value;
-        ((FloatType*)new_code)->res = FloatToBiString(((FloatType*)new_code)->value);
+        CodeType *new_code = new FloatType(1);
+        ((FloatType *)new_code)->value = this->value - ((FloatType *)another)->value;
+        ((FloatType *)new_code)->res = FloatToBiString(((FloatType *)new_code)->value);
         return new_code;
     }
 
-    virtual CodeType* mul(CodeType* another)
+    virtual CodeType *mul(CodeType *another)
     {
-        CodeType* new_code = new FloatType(1);
-        ((FloatType*)new_code)->value = this->value * ((FloatType*)another)->value;
-        ((FloatType*)new_code)->res = FloatToBiString(((FloatType*)new_code)->value);
+        CodeType *new_code = new FloatType(1);
+        ((FloatType *)new_code)->value = this->value * ((FloatType *)another)->value;
+        ((FloatType *)new_code)->res = FloatToBiString(((FloatType *)new_code)->value);
         return new_code;
     }
 
-    virtual CodeType* div(CodeType* another)
+    virtual CodeType *div(CodeType *another)
     {
-        CodeType* new_code = new FloatType(1);
-        ((FloatType*)new_code)->value = this->value / ((FloatType*)another)->value;
-        ((FloatType*)new_code)->res = FloatToBiString(((FloatType*)new_code)->value);
+        CodeType *new_code = new FloatType(1);
+        ((FloatType *)new_code)->value = this->value / ((FloatType *)another)->value;
+        ((FloatType *)new_code)->res = FloatToBiString(((FloatType *)new_code)->value);
         return new_code;
     }
-    
+
     virtual string toString()
     {
         stringstream sst;
@@ -2098,12 +1946,10 @@ public:
     }
 };
 
-
-class ConvertInterface 
+class ConvertInterface
 {
 public:
-
-    ConvertInterface(){}
+    ConvertInterface() {}
 
     void run()
     {
@@ -2113,20 +1959,20 @@ public:
         cin >> type;
 
         system("cls");
-        CodeType* code_1;
-        CodeType* code_2;
+        CodeType *code_1;
+        CodeType *code_2;
 
-        if(type == 1)
+        if (type == 1)
         {
             cout << "length : " << endl;
-            cout << " >> " ;
+            cout << " >> ";
             cin >> IntType::length;
             cout << "fisrt : " << endl;
             code_1 = new IntType();
             cout << "second : " << endl;
             code_2 = new IntType();
         }
-        else 
+        else
         {
             cout << "first : " << endl;
             code_1 = new FloatType();
@@ -2150,9 +1996,7 @@ public:
         getchar();
         getchar();
     }
-
 };
-
 
 int old_test()
 {
@@ -2185,8 +2029,8 @@ int old_test()
 
 int IntTypeTest()
 {
-    CodeType* code_1 = new IntType("11111111111111101010000001110001", 32);
-    CodeType* code_2 = new IntType(-999, 32);
+    CodeType *code_1 = new IntType("11111111111111101010000001110001", 32);
+    CodeType *code_2 = new IntType(-999, 32);
     cout << "first is : " << code_1->toString() << endl;
     cout << "second is : " << code_2->toString() << endl;
     cout << code_1->toString() << " + " << code_2->toString() << " = " << endl;
@@ -2213,8 +2057,8 @@ int FloatTypeTest()
     // cout << FloatType::BiStringToFloat("01000001000100100110101101111010") << endl;
 
     // CodeType* code_1 = new FloatType("11111111011111101010000001110001");
-    CodeType* code_1 = new FloatType("01000001000100100110101101111011");
-    CodeType* code_2 = new FloatType(-999);
+    CodeType *code_1 = new FloatType("01000001000100100110101101111011");
+    CodeType *code_2 = new FloatType(-999);
     cout << "first is : " << code_1->toString() << endl;
     cout << "second is : " << code_2->toString() << endl;
     cout << code_1->toString() << " + " << code_2->toString() << " = " << endl;
@@ -2229,13 +2073,12 @@ int FloatTypeTest()
     return 1;
 }
 
-class UserInterface 
+class UserInterface
 {
 public:
-
     int interface_state = 0;
 
-    enum 
+    enum
     {
         NULLSTATE,
         STATE_ONE,
@@ -2253,12 +2096,12 @@ public:
         cout << "3. load code and run" << endl;
         cout << "4. convert with int or float" << endl;
         cout << "type number to execute" << endl;
-        cout << " >> " ;
+        cout << " >> ";
         try
         {
             cin >> n;
         }
-        catch(const std::exception& e)
+        catch (const std::exception &e)
         {
             string s;
             cin >> s;
@@ -2276,17 +2119,17 @@ public:
         cout << "number of lines: " << endl;
         cout << " >> ";
         cin >> n;
-        cout << n << " lines of asm code :" << endl; 
+        cout << n << " lines of asm code :" << endl;
 
         vector<string> bibuffer;
 
-        for(int i=0; i<n; i++)
+        for (int i = 0; i < n; i++)
         {
             string line;
             getline(cin, line);
             Instruction ins(line, true);
             ins.toCompeleteType();
-            if(ins.instruction_type == Instruction::NULLTYPE)
+            if (ins.instruction_type == Instruction::NULLTYPE)
             {
                 i--;
                 continue;
@@ -2297,7 +2140,7 @@ public:
             bibuffer.push_back(line);
         }
 
-        for(string code : bibuffer)
+        for (string code : bibuffer)
         {
             cout << code << endl;
         }
@@ -2320,13 +2163,13 @@ public:
 
         vector<string> asmbuffer;
 
-        for(int i=0; i<n; i++)
+        for (int i = 0; i < n; i++)
         {
             string line;
             getline(cin, line);
             Instruction ins(line, false);
             ins.toCompeleteType();
-            if(ins.instruction_type == Instruction::NULLTYPE)
+            if (ins.instruction_type == Instruction::NULLTYPE)
             {
                 i--;
                 continue;
@@ -2335,7 +2178,7 @@ public:
             asmbuffer.push_back(ins.toString());
         }
 
-        for(string code : asmbuffer)
+        for (string code : asmbuffer)
         {
             cout << code << endl;
         }
@@ -2350,7 +2193,7 @@ public:
     {
         vector<uint32_t> res;
 
-        for(int i=0; i<lines; i++)
+        for (int i = 0; i < lines; i++)
         {
             string str;
             cin >> str;
@@ -2366,7 +2209,7 @@ public:
     {
         int n;
         cout << "lines of the code:" << endl;
-        cout << " >> " ;
+        cout << " >> ";
         cin >> n;
         cout << n << " lines of bi code" << endl;
 
@@ -2374,7 +2217,7 @@ public:
         vector<uint32_t> code = GetCode(n);
         rm.LoadCode(code);
 
-        while(1)
+        while (1)
         {
             system("cls");
             cout << rm.toString() << endl;
@@ -2382,7 +2225,7 @@ public:
             getchar();
 
             int res = rm.Execute();
-            if(res == 0)
+            if (res == 0)
             {
                 break;
             }
@@ -2399,46 +2242,44 @@ public:
     void run()
     {
         ConvertInterface ci;
-        while(1)
+        while (1)
         {
             switch (this->interface_state)
             {
-                case UserInterface::NULLSTATE:
-                    this->printUI();
-                    break;
+            case UserInterface::NULLSTATE:
+                this->printUI();
+                break;
 
-                case UserInterface::STATE_ONE:
-                    this->AsmConvert();
-                    break;
+            case UserInterface::STATE_ONE:
+                this->AsmConvert();
+                break;
 
-                case UserInterface::STATE_TWO:
-                    this->BiConvert();
-                    break;
+            case UserInterface::STATE_TWO:
+                this->BiConvert();
+                break;
 
-                case UserInterface::STATE_THREE:
-                    this->VmExecute();
-                    break;
+            case UserInterface::STATE_THREE:
+                this->VmExecute();
+                break;
 
-                case UserInterface::STATE_FOUR:
-                    ci.run();
-                    this->interface_state = 0;
-                    break;
+            case UserInterface::STATE_FOUR:
+                ci.run();
+                this->interface_state = 0;
+                break;
 
-                default:
-                    break;
+            default:
+                break;
             }
         }
     }
-
 };
-
 
 int main()
 {
     Instruction::InitMap();
     // test_andi_instruction();
     // test_ori_instruction();
-    //test_xori_instruction();1
+    // test_xori_instruction();1
     // test_jal_instruction();
     // test_beq_instruction();
     // test_jr_instruction();
