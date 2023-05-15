@@ -1317,6 +1317,90 @@ void test_jr_instruction()
     cout << "pc: " << reg_mem.pc << endl;
 }
 
+void test_and_instruction()
+{
+    RegAndMemory reg_mem;
+
+    string and_asm = "and $s0, $s1, $s2";
+    Instruction and_instr(and_asm, true);
+    Instruction::InitMap();
+
+    and_instr.toCompeleteType();
+    cout << bitset<32>(and_instr.bi_instruction) << endl;
+
+    stringstream sst;
+
+    sst << bitset<32>(and_instr.bi_instruction);
+
+    string bi_str;
+
+    sst >> bi_str;
+
+    Instruction ins_test(bi_str, false);
+
+    ins_test.toCompeleteType();
+
+    ins_test.Execute(&reg_mem);
+
+    cout << reg_mem.toString() << endl;
+}
+
+void test_slt_instruction()
+{
+    RegAndMemory reg_mem;
+
+    string slt_asm = "slt $s0, $s1, $s2";
+    Instruction slt_instr(slt_asm, true);
+    Instruction::InitMap();
+
+    slt_instr.toCompeleteType();
+    cout << bitset<32>(slt_instr.bi_instruction) << endl;
+
+    stringstream sst;
+
+    sst << bitset<32>(slt_instr.bi_instruction);
+
+    string bi_str;
+
+    sst >> bi_str;
+
+    Instruction ins_test(bi_str, false);
+
+    ins_test.toCompeleteType();
+
+    ins_test.Execute(&reg_mem);
+
+    cout << reg_mem.toString() << endl;
+}
+
+void test_add_instruction()
+{
+    RegAndMemory reg_mem;
+
+    string add_asm = "add $s0, $s1, $s2";
+    Instruction add_instr(add_asm, true);
+    Instruction::InitMap();
+
+    add_instr.toCompeleteType();
+    cout << bitset<32>(add_instr.bi_instruction) << endl;
+
+    stringstream sst;
+
+    sst << bitset<32>(add_instr.bi_instruction);
+
+    string bi_str;
+
+    sst >> bi_str;
+
+    Instruction ins_test(bi_str, false);
+
+    ins_test.toCompeleteType();
+
+    ins_test.Execute(&reg_mem);
+
+    cout << reg_mem.toString() << endl;
+}
+
 void running_test()
 {
     RegAndMemory rm;
