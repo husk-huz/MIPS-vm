@@ -1048,7 +1048,7 @@ void Instruction::Exe_beq(RegAndMemory *target)
         cout << "reg1: " << reg1 << " reg2: " << reg2 << " offset: " << offset << endl;
         if (target->reg[reg1] == target->reg[reg2])
         {
-            target->pc = target->pc + offset;
+            target->pc = (target->pc + 4) + offset;
         }
     }
 }
@@ -1086,8 +1086,8 @@ void Instruction::Exe_jal(RegAndMemory *target)
         cout << " target: " << addr_target << endl;
         // only for testing purpose
         // target->reg[reg2] = 16;
-        target->reg[ra] = target->pc;
-        target->pc = (target->pc & 0xFA000000) + addr_target;
+        target->reg[ra] = target->pc + 4;
+        target->pc = ((target->pc + 4) & 0xFA000000) + addr_target;
     }
 }
 
