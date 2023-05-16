@@ -700,10 +700,13 @@ void Instruction::Exe_add(RegAndMemory *target)
     {
         int reg1 = this->getUValueFromBits(this->bi_instruction, 15, 11);
         int reg2 = this->getUValueFromBits(this->bi_instruction, 25, 21);
-        int reg3 = this->getValueFromBits(this->bi_instruction, 20, 16);
+        int reg3 = this->getValueFromBits(this->bi_instruction, 35, 31);
         cout << "reg1 : " << reg1
              << "reg2 : " << reg2
              << "reg3: " << reg3 << endl;
+        // only for test purpose
+        // target->reg[reg2] = 5;
+        // target->reg[reg3] = 3;
         target->reg[reg1] = target->reg[reg2] + target->reg[reg3];
     }
 }
@@ -749,10 +752,13 @@ void Instruction::Exe_slt(RegAndMemory *target)
     {
         int reg1 = this->getUValueFromBits(this->bi_instruction, 15, 11);
         int reg2 = this->getUValueFromBits(this->bi_instruction, 25, 21);
-        int reg3 = this->getValueFromBits(this->bi_instruction, 20, 16);
+        int reg3 = this->getValueFromBits(this->bi_instruction, 35, 31);
         cout << "reg1 : " << reg1
              << "reg2 : " << reg2
              << "reg3: " << reg3 << endl;
+        // only for test purpose
+        // target->reg[reg2] = 12;
+        // target->reg[reg3] = 10;
         target->reg[reg1] = target->reg[reg2] < target->reg[reg3];
     }
 }
@@ -798,10 +804,13 @@ void Instruction::Exe_and(RegAndMemory *target)
     {
         int reg1 = this->getUValueFromBits(this->bi_instruction, 15, 11);
         int reg2 = this->getUValueFromBits(this->bi_instruction, 25, 21);
-        int reg3 = this->getValueFromBits(this->bi_instruction, 20, 16);
+        int reg3 = this->getValueFromBits(this->bi_instruction, 35, 31);
         cout << "reg1 : " << reg1
              << "reg2 : " << reg2
              << "reg3: " << reg3 << endl;
+        // only for testing purpose
+        // target->reg[reg2] = 12;
+        // target->reg[reg3] = 10;
         target->reg[reg1] = target->reg[reg2] & target->reg[reg3];
     }
 }
@@ -843,12 +852,14 @@ void Instruction::Exe_addi(RegAndMemory *target)
     }
     else
     {
-        int reg1 = this->getUValueFromBits(this->bi_instruction, 25, 21);
-        int reg2 = this->getUValueFromBits(this->bi_instruction, 20, 16);
-        int value = this->getValueFromBits(this->bi_instruction, 15, 0);
+        int reg1 = this->getUValueFromBits(this->bi_instruction, 15, 11);
+        int reg2 = this->getUValueFromBits(this->bi_instruction, 25, 21);
+        int value = this->getValueFromBits(this->bi_instruction, 35, 31);
         cout << "reg1 : " << reg1
              << "reg2 : " << reg2
              << "val: " << value << endl;
+        // only for testing purpose
+        // target->reg[reg2] = 12;
         target->reg[reg1] = target->reg[reg2] + value;
     }
 }
@@ -1035,8 +1046,6 @@ void Instruction::Exe_beq(RegAndMemory *target)
         int reg2 = this->getUValueFromBits(this->bi_instruction, 20, 16);
         int offset = this->getUValueFromBits(this->bi_instruction, 15, 0);
         cout << "reg1: " << reg1 << " reg2: " << reg2 << " offset: " << offset << endl;
-        // only for testing purpose
-        // target->reg[reg2] = 16;
         if (target->reg[reg1] == target->reg[reg2])
         {
             target->pc = target->pc + offset;
@@ -1120,6 +1129,7 @@ void Instruction::Exe_jr(RegAndMemory *target)
     }
 }
 
+// passed
 void test_addi_instruction()
 {
     RegAndMemory reg_mem;
@@ -1148,6 +1158,7 @@ void test_addi_instruction()
     cout << reg_mem.toString() << endl;
 }
 
+// passed
 void test_andi_instruction()
 {
     // Create a new instance of RegAndMemory
@@ -1175,6 +1186,7 @@ void test_andi_instruction()
     cout << reg_mem.toString() << endl;
 }
 
+// passed
 void test_ori_instruction()
 {
     // Create a new instance of RegAndMemory
@@ -1202,6 +1214,7 @@ void test_ori_instruction()
     cout << reg_mem.toString() << endl;
 }
 
+// passed
 void test_xori_instruction()
 {
     // Create a new instance of RegAndMemory
@@ -1229,6 +1242,7 @@ void test_xori_instruction()
     cout << reg_mem.toString() << endl;
 }
 
+// passed
 void test_jal_instruction()
 {
     // Create a new instance of RegAndMemory
@@ -1258,6 +1272,7 @@ void test_jal_instruction()
     cout << "pc: " << reg_mem.pc << endl;
 }
 
+// passed
 void test_beq_instruction()
 {
     // Create a new instance of RegAndMemory
@@ -1287,6 +1302,7 @@ void test_beq_instruction()
     cout << "pc: " << reg_mem.pc << endl;
 }
 
+// passed
 void test_jr_instruction()
 {
     // Create a new instance of RegAndMemory
@@ -1317,6 +1333,7 @@ void test_jr_instruction()
     cout << "pc: " << reg_mem.pc << endl;
 }
 
+// passed
 void test_and_instruction()
 {
     RegAndMemory reg_mem;
@@ -1345,6 +1362,7 @@ void test_and_instruction()
     cout << reg_mem.toString() << endl;
 }
 
+// passed
 void test_slt_instruction()
 {
     RegAndMemory reg_mem;
@@ -2361,12 +2379,16 @@ public:
 int main()
 {
     Instruction::InitMap();
+    // test_add_instruction();
     // test_andi_instruction();
     // test_ori_instruction();
-    // test_xori_instruction();1
+    // test_xori_instruction();
     // test_jal_instruction();
     // test_beq_instruction();
     // test_jr_instruction();
+    // test_and_instruction();
+    // test_slt_instruction();
+    // test_addi_instruction();
     // running_test();
     // AsmConvert();
     UserInterface ui;
